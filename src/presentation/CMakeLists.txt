@@ -15,6 +15,8 @@ target_link_libraries(ps_presentation PUBLIC
     ps_output
     ps_timeline
     ps_scripture
+    ps_timers
+    ps_templates
     Qt6::Core
     Qt6::Gui
     Qt6::Qml

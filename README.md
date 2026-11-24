@@ -79,6 +79,8 @@ Chạy: `build\Release\ProSlides.exe [file.show]`
 | Layout | Nhiều layout, thêm/xóa/sắp xếp slide, transition |
 | Timeline | Timeline action (ms) + duration (s), loop, playback engine + editor |
 | Kinh Thánh | Đọc `.fsb` FreeShow, tìm kiếm, parse reference `John 3:16`, tạo slide |
+| Hẹn giờ | Timer đếm ngược/đồng hồ, cảnh báo màu, điều khiển từ remote |
+| Template | Đọc `templates.json` FreeShow, áp dụng style/background vào slide |
 | Trình chiếu | Màn hình audiences fullscreen, confidence monitor, clear/restore |
 | Remote | WebSocket :5510, UDP discovery :5514, API tương thích FreeShow |
 | Tìm kiếm | SQLite FTS5, `unicode61 remove_diacritics 2` (tìm `yeu` ra `yêu`) |

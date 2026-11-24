@@ -53,6 +53,10 @@ ProSlides dùng WebSocket (mặc định `ws://<host>:5510`) với envelope gi�
 | `start_scripture` | `{reference}` | `true` (tạo slide) |
 | `scripture_next` / `scripture_previous` | `{}` | `true` |
 | `get_scripture` | `{}` | `{reference, text}` |
+| `name_start_timer` | `{name, seconds}` | timer id |
+| `id_pause_timer` / `pause_timers` | `{id?}` | `true` |
+| `id_stop_timer` / `stop_timers` | `{id?}` | `true` |
+| `get_timers` | `{}` | mảng timer |
 
 Các action khác của FreeShow (`play_media`, `start_timer`, `audio_*`, …) có thể
 thêm bằng một nhánh trong `PresentationController::onApiRequested()`.

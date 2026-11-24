@@ -1,4 +1,5 @@
 #include <QtTest>
+#include <QSignalSpy>
 #include <QDir>
 #include "Types.h"
 #include "ShowFile.h"
@@ -8,6 +9,8 @@
 #include "crdt/Document.h"
 #include "timeline/TimelineEngine.h"
 #include "scripture/Bible.h"
+#include "timers/TimerManager.h"
+#include "templates/TemplateLibrary.h"
 
 using namespace ps;
 
@@ -22,6 +25,8 @@ private slots:
     void ftsVietnameseSearch();
     void timelineTriggers();
     void scriptureReferenceParsing();
+    void timerLifecycle();
+    void templateRoundTrip();
 };
 
 void ProSlidesTest::showFileRoundTrip()
@@ -183,6 +188,35 @@ void ProSlidesTest::scriptureReferenceParsing()
     const auto loaded = scripture::decodeBibleFile(bytes);
     QVERIFY(loaded.ok);
     QCOMPARE(loaded.bible.books.size(), 1);
+}
+
+void ProSlidesTest::timerLifecycle()
+{
+    ps::timers::TimerManager manager;
+    const QString id = manager.startTimer(u"Pre-service", 1, 0);
+    QVERIFY(!id.isEmpty());
+    QCOMPARE(manager.activeCount(), 1);
+    QVERIFY(manager.pauseTimer(id));
+    QCOMPARE(manager.activeCount(), 0);
+    QVERIFY(manager.resumeTimer(id));
+    QCOMPARE(manager.activeCount(), 1);
+    QVERIFY(manager.stopTimer(id));
+    QCOMPARE(manager.timers().size(), 0);
+}
+
+void ProSlidesTest::templateRoundTrip()
+{
+    ps::templates::Template t;
+    t.id = makeId();
+    t.name = u"Lyric Dark";
+    t.category = u"Text";
+    t.color = u"#3ddc84";
+    t.settings.insert(u"backgroundColor", u"#000000");
+
+    const auto obj = t.toJson();
+    const auto loaded = ps::templates::Template::fromJson(obj);
+    QCOMPARE(loaded.name, t.name);
+    QCOMPARE(loaded.settings.value(u"backgroundColor").toString(), u"#000000");
 }
 
 QTEST_MAIN(ProSlidesTest)

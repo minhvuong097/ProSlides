@@ -12,6 +12,8 @@
 #include "output/OutputManager.h"
 #include "timeline/TimelineEngine.h"
 #include "scripture/ScriptureProvider.h"
+#include "timers/TimerManager.h"
+#include "templates/TemplateLibrary.h"
 
 #include <QObject>
 #include <QVariantList>
@@ -44,6 +46,8 @@ class PresentationController : public QObject
     Q_PROPERTY(QString scriptureReference READ scriptureReference NOTIFY scriptureChanged)
     Q_PROPERTY(QString scriptureText READ scriptureText NOTIFY scriptureChanged)
     Q_PROPERTY(QStringList bibleNames READ bibleNames NOTIFY biblesChanged)
+    Q_PROPERTY(QVariantList timers READ timers NOTIFY timersChanged)
+    Q_PROPERTY(QVariantList templates READ templates NOTIFY templatesChanged)
 
 public:
     explicit PresentationController(QObject* parent = nullptr);
@@ -64,6 +68,8 @@ public:
     QString scriptureReference() const;
     QString scriptureText() const;
     QStringList bibleNames() const;
+    QVariantList timers() const { return m_timers.timers(); }
+    QVariantList templates() const { return m_templates.templates(); }
 
     ShowDocument& document() { return m_document; }
     OutputManager& output() { return m_output; }
@@ -115,6 +121,14 @@ public:
     Q_INVOKABLE bool scripturePrevious();
     Q_INVOKABLE bool setActiveBible(const QString& id);
 
+    // Timers & templates
+    Q_INVOKABLE QString startTimer(const QString& name, double seconds, int warnSeconds = 0);
+    Q_INVOKABLE bool toggleTimer(const QString& id);
+    Q_INVOKABLE bool stopTimer(const QString& id);
+    Q_INVOKABLE void stopAllTimers();
+    Q_INVOKABLE bool applyTemplate(const QString& slideId, const QString& templateId);
+    Q_INVOKABLE QString createTemplate(const QString& name, const QString& slideId);
+
     void attachEngine(QQmlEngine* engine);
 
     Q_INVOKABLE QVariantMap servicePlan() const;
@@ -134,6 +148,8 @@ signals:
     void timelineActionsChanged();
     void scriptureChanged();
     void biblesChanged();
+    void timersChanged();
+    void templatesChanged();
     void errorOccurred(const QString& message);
     void toast(const QString& message);
 
@@ -166,6 +182,8 @@ private:
     output::OutputManager m_output;
     timeline::TimelineEngine m_timeline;
     scripture::ScriptureProvider m_scripture;
+    timers::TimerManager m_timers;
+    templates::TemplateLibrary m_templates;
 
     QVariantList m_slides;
     QVariantList m_searchResults;

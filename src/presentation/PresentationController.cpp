@@ -50,6 +50,13 @@ PresentationController::PresentationController(QObject* parent)
     m_scripture.setDirectory(QDir(base).filePath(u"Bibles"));
     m_scripture.load();
 
+    m_templates.setFilePath(QDir(base).filePath(u"templates.json"));
+    m_templates.load();
+    connect(&m_timers, &timers::TimerManager::timersChanged,
+            this, &PresentationController::timersChanged);
+    connect(&m_templates, &templates::TemplateLibrary::templatesChanged,
+            this, &PresentationController::templatesChanged);
+
     m_sync.setTransport(&m_remote);
     connect(&m_discovery, &remote::RemoteDiscovery::peerDiscovered,
             this, [this](const remote::RemotePeer& peer) {
@@ -513,6 +520,26 @@ bool PresentationController::scriptureNext() { return m_scripture.openNextVerse(
 bool PresentationController::scripturePrevious() { return m_scripture.openPreviousVerse(); }
 bool PresentationController::setActiveBible(const QString& id) { return m_scripture.setActiveBible(id); }
 
+QString PresentationController::startTimer(const QString& name, double seconds, int warnSeconds)
+{
+    return m_timers.startTimer(name, seconds, warnSeconds);
+}
+bool PresentationController::toggleTimer(const QString& id) { return m_timers.toggleTimer(id); }
+bool PresentationController::stopTimer(const QString& id) { return m_timers.stopTimer(id); }
+void PresentationController::stopAllTimers() { m_timers.stopAll(); }
+
+bool PresentationController::applyTemplate(const QString& slideId, const QString& templateId)
+{
+    const bool ok = m_templates.applyToSlide(m_document, slideId, templateId);
+    if (ok) emit toast(u"Template applied");
+    return ok;
+}
+
+QString PresentationController::createTemplate(const QString& name, const QString& slideId)
+{
+    return m_templates.createFromSlide(m_document, name, slideId);
+}
+
 // ---------------------------------------------------------------------------
 // API bridge (phone remote)
 // ---------------------------------------------------------------------------
@@ -595,6 +622,24 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
         o.insert(u"reference", m_scripture.activeReference());
         o.insert(u"text", m_scripture.activeText());
         result = o;
+    }
+    else if (api == "name_start_timer") {
+        const QString name = data.value(u"name").toString();
+        const double seconds = data.value(u"seconds").toDouble(300);
+        result = m_timers.startTimer(name, seconds);
+    }
+    else if (api == "id_pause_timer" || api == "pause_timers") {
+        if (data.contains(u"id")) m_timers.pauseTimer(data.value(u"id").toString());
+        else m_timers.pauseAll();
+        result = true;
+    }
+    else if (api == "id_stop_timer" || api == "stop_timers") {
+        if (data.contains(u"id")) m_timers.stopTimer(data.value(u"id").toString());
+        else m_timers.stopAll();
+        result = true;
+    }
+    else if (api == "get_timers") {
+        result = QJsonArray::fromVariantList(m_timers.timers());
     }
     else {
         emit toast(u"Unknown API action: " + api);

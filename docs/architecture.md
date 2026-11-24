@@ -78,12 +78,13 @@ Qt RHI có thể cắm thêm trong `FFmpegDecodeWorker::toImage()` nếu cần.
   editor QML `TimelinePanel`.
 - `src/scripture/` — Bible `.fsb` [id, Bible], parse reference, tìm kiếm và
   index FTS5 `verses_fts`; tạo slide kinh thánh từ remote/UI.
-- API remote mở rộng: timeline + scripture (xem `docs/protocol.md`).
+- `src/timers/TimerManager` — countdown/clock/stopwatch, cảnh báo màu, API remote.
+- `src/templates/TemplateLibrary` — `templates.json` FreeShow, apply/create template.
+- API remote mở rộng: timeline + scripture + timers (xem `docs/protocol.md`).
 
 ## 6. Roadmap tiếp theo
 
 - Keyframe easing trực quan cho style timeline
 - Content providers (Planning Center, Canva) như FreeShow
 - MIDI/HID trigger, audio routing, recording
-- Theme/template editor tương thích FreeShow
 - Cloud sync qua CRDT relay server

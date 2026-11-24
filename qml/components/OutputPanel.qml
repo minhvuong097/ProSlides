@@ -176,6 +176,13 @@ Item {
                     font: Theme.smallFont
                     wrapMode: Text.WordWrap
                 }
+
+                Rectangle { width: parent.width; height: 1; color: Theme.border }
+
+                TimerPanel {
+                    width: parent.width
+                    height: Math.max(90, panel.height - 490)
+                }
             }
         }
     }
