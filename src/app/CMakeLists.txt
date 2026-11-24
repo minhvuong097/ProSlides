@@ -15,4 +15,19 @@ target_link_libraries(proslides_app PRIVATE
     Qt6::Svg
 )
 
-set_target_properties(proslides_app PROPERTIES OUTPUT_NAME ProSlides)
+set_target_properties(proslides_app PROPERTIES
+    OUTPUT_NAME ProSlides
+    WIN32_EXECUTABLE ON
+    MACOSX_BUNDLE ON
+)
+
+if(WIN32)
+    find_program(WINDEPLOYQT windeployqt HINTS "${Qt6_DIR}/../../../bin")
+    if(WINDEPLOYQT)
+        add_custom_command(TARGET proslides_app POST_BUILD
+            COMMAND "${WINDEPLOYQT}" --no-translations --no-system-d3d-compiler
+                    --compiler-runtime "$<TARGET_FILE:proslides_app>"
+            COMMENT "Deploying Qt runtime..."
+        )
+    endif()
+endif()

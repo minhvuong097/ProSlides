@@ -96,21 +96,6 @@ if(PS_BUILD_TESTS)
     add_subdirectory(tests)
 endif()
 
-# ----------------------------------------------------------------------------
-# Windows deployment
-# ----------------------------------------------------------------------------
-set_target_properties(proslides_app PROPERTIES
-    WIN32_EXECUTABLE ON
-    MACOSX_BUNDLE ON
-)
-
-if(WIN32)
-    find_program(WINDEPLOYQT windeployqt HINTS "${Qt6_DIR}/../../../bin")
-    if(WINDEPLOYQT)
-        add_custom_command(TARGET proslides_app POST_BUILD
-            COMMAND "${WINDEPLOYQT}" --no-translations --no-system-d3d-compiler
-                    --compiler-runtime "$<TARGET_FILE:proslides_app>"
-            COMMENT "Deploying Qt runtime..."
-        )
-    endif()
-endif()
+# Windows deployment is configured in src/app/CMakeLists.txt, where the
+# proslides_app target is created (CMake requires TARGET commands in the
+# same directory as the target).
