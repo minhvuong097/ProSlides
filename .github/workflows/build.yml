@@ -1,0 +1,45 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  windows:
+    name: Windows · MSVC · Qt 6
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+
+      # Use a Qt LTS version available to the installer. CMake requires >= 6.5.
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.8.3'
+          host: windows
+          target: desktop
+          arch: win64_msvc2019_64
+          modules: qtmultimedia qtwebsockets qtquickcontrols2 qtsvg
+          cache: true
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Configure
+        run: cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DPS_BUILD_TESTS=ON -DPS_ENABLE_FFMPEG=OFF
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Test
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: Upload executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: ProSlides-Windows
+          path: build/Release/ProSlides.exe
+          if-no-files-found: warn

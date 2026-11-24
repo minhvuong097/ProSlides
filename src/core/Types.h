@@ -12,6 +12,7 @@
 #include <QColor>
 #include <QRectF>
 #include <QSize>
+#include <QMetaType>
 
 #include <cstdint>
 #include <optional>
@@ -410,3 +411,5 @@ QString makeId();                       // UUID v4 string
 QStringList splitSections(const QString& text);
 
 } // namespace ps
+
+Q_DECLARE_METATYPE(ps::TimelineAction)
