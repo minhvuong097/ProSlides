@@ -81,6 +81,7 @@ Chạy: `build\Release\ProSlides.exe [file.show]`
 | Kinh Thánh | Đọc `.fsb` FreeShow, tìm kiếm, parse reference `John 3:16`, tạo slide |
 | Hẹn giờ | Timer đếm ngược/đồng hồ, cảnh báo màu, điều khiển từ remote |
 | Template | Đọc `templates.json` FreeShow, áp dụng style/background vào slide |
+| Overlay/Scene | Đọc `overlays.json`/`scenes.json`, bật/tắt overlay, chuyển scene |
 | Trình chiếu | Màn hình audiences fullscreen, confidence monitor, clear/restore |
 | Remote | WebSocket :5510, UDP discovery :5514, API tương thích FreeShow |
 | Tìm kiếm | SQLite FTS5, `unicode61 remove_diacritics 2` (tìm `yeu` ra `yêu`) |

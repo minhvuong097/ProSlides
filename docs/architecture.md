@@ -80,7 +80,8 @@ Qt RHI có thể cắm thêm trong `FFmpegDecodeWorker::toImage()` nếu cần.
   index FTS5 `verses_fts`; tạo slide kinh thánh từ remote/UI.
 - `src/timers/TimerManager` — countdown/clock/stopwatch, cảnh báo màu, API remote.
 - `src/templates/TemplateLibrary` — `templates.json` FreeShow, apply/create template.
-- API remote mở rộng: timeline + scripture + timers (xem `docs/protocol.md`).
+- `src/overlays/OverlayManager` — overlay/scene FreeShow, bật/tắt, chuyển scene.
+- API remote mở rộng: timeline + scripture + timers + overlays (xem `docs/protocol.md`).
 
 ## 6. Roadmap tiếp theo
 

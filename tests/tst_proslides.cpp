@@ -11,6 +11,7 @@
 #include "scripture/Bible.h"
 #include "timers/TimerManager.h"
 #include "templates/TemplateLibrary.h"
+#include "overlays/OverlayManager.h"
 
 using namespace ps;
 
@@ -27,6 +28,7 @@ private slots:
     void scriptureReferenceParsing();
     void timerLifecycle();
     void templateRoundTrip();
+    void overlaySceneSwitch();
 };
 
 void ProSlidesTest::showFileRoundTrip()
@@ -217,6 +219,27 @@ void ProSlidesTest::templateRoundTrip()
     const auto loaded = ps::templates::Template::fromJson(obj);
     QCOMPARE(loaded.name, t.name);
     QCOMPARE(loaded.settings.value(u"backgroundColor").toString(), u"#000000");
+}
+
+void ProSlidesTest::overlaySceneSwitch()
+{
+    overlays::OverlayManager manager;
+    overlays::Overlay o1;
+    o1.id = u"o1";
+    o1.name = u"Lower Third";
+    overlays::Overlay o2;
+    o2.id = u"o2";
+    o2.name = u"QR Code";
+
+    overlays::Scene scene;
+    scene.id = u"s1";
+    scene.name = u"Welcome";
+    scene.overlays = { u"o1", u"o2" };
+    scene.hiddenOverlays = { u"o2" };
+
+    // exercise JSON round trip
+    QCOMPARE(overlays::Overlay::fromJson(o1.toJson()).name, u"Lower Third");
+    QCOMPARE(overlays::Scene::fromJson(scene.toJson()).overlays.size(), size_t(2));
 }
 
 QTEST_MAIN(ProSlidesTest)

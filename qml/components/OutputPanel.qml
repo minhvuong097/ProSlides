@@ -181,7 +181,12 @@ Item {
 
                 TimerPanel {
                     width: parent.width
-                    height: Math.max(90, panel.height - 490)
+                    height: Math.max(90, panel.height - 560)
+                }
+
+                OverlayPanel {
+                    width: parent.width
+                    height: 100
                 }
             }
         }

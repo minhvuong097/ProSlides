@@ -80,6 +80,7 @@ add_subdirectory(src/timeline)
 add_subdirectory(src/scripture)
 add_subdirectory(src/timers)
 add_subdirectory(src/templates)
+add_subdirectory(src/overlays)
 add_subdirectory(src/presentation)
 add_subdirectory(src/app)
 

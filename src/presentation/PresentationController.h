@@ -14,6 +14,7 @@
 #include "scripture/ScriptureProvider.h"
 #include "timers/TimerManager.h"
 #include "templates/TemplateLibrary.h"
+#include "overlays/OverlayManager.h"
 
 #include <QObject>
 #include <QVariantList>
@@ -48,6 +49,9 @@ class PresentationController : public QObject
     Q_PROPERTY(QStringList bibleNames READ bibleNames NOTIFY biblesChanged)
     Q_PROPERTY(QVariantList timers READ timers NOTIFY timersChanged)
     Q_PROPERTY(QVariantList templates READ templates NOTIFY templatesChanged)
+    Q_PROPERTY(QVariantList overlays READ overlays NOTIFY overlaysChanged)
+    Q_PROPERTY(QVariantList scenes READ scenes NOTIFY overlaysChanged)
+    Q_PROPERTY(QVariantList activeOverlays READ activeOverlays NOTIFY overlaysChanged)
 
 public:
     explicit PresentationController(QObject* parent = nullptr);
@@ -70,6 +74,9 @@ public:
     QStringList bibleNames() const;
     QVariantList timers() const { return m_timers.timers(); }
     QVariantList templates() const { return m_templates.templates(); }
+    QVariantList overlays() const { return m_overlays.overlays(); }
+    QVariantList scenes() const { return m_overlays.scenes(); }
+    QVariantList activeOverlays() const { return m_overlays.activeOverlays(); }
 
     ShowDocument& document() { return m_document; }
     OutputManager& output() { return m_output; }
@@ -129,6 +136,11 @@ public:
     Q_INVOKABLE bool applyTemplate(const QString& slideId, const QString& templateId);
     Q_INVOKABLE QString createTemplate(const QString& name, const QString& slideId);
 
+    // Overlays / scenes
+    Q_INVOKABLE void toggleOverlay(const QString& id);
+    Q_INVOKABLE void clearOverlays();
+    Q_INVOKABLE bool startScene(const QString& id);
+
     void attachEngine(QQmlEngine* engine);
 
     Q_INVOKABLE QVariantMap servicePlan() const;
@@ -150,6 +162,7 @@ signals:
     void biblesChanged();
     void timersChanged();
     void templatesChanged();
+    void overlaysChanged();
     void errorOccurred(const QString& message);
     void toast(const QString& message);
 
@@ -184,6 +197,7 @@ private:
     scripture::ScriptureProvider m_scripture;
     timers::TimerManager m_timers;
     templates::TemplateLibrary m_templates;
+    overlays::OverlayManager m_overlays;
 
     QVariantList m_slides;
     QVariantList m_searchResults;

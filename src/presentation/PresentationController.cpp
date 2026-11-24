@@ -57,6 +57,13 @@ PresentationController::PresentationController(QObject* parent)
     connect(&m_templates, &templates::TemplateLibrary::templatesChanged,
             this, &PresentationController::templatesChanged);
 
+    m_overlays.setDirectory(base);
+    m_overlays.load();
+    connect(&m_overlays, &overlays::OverlayManager::activeChanged,
+            this, &PresentationController::overlaysChanged);
+    connect(&m_overlays, &overlays::OverlayManager::overlaysChanged,
+            this, &PresentationController::overlaysChanged);
+
     m_sync.setTransport(&m_remote);
     connect(&m_discovery, &remote::RemoteDiscovery::peerDiscovered,
             this, [this](const remote::RemotePeer& peer) {
@@ -540,6 +547,21 @@ QString PresentationController::createTemplate(const QString& name, const QStrin
     return m_templates.createFromSlide(m_document, name, slideId);
 }
 
+void PresentationController::toggleOverlay(const QString& id)
+{
+    m_overlays.toggleOverlay(id);
+}
+void PresentationController::clearOverlays()
+{
+    m_overlays.clearOverlays();
+}
+bool PresentationController::startScene(const QString& id)
+{
+    const bool ok = m_overlays.startScene(id);
+    if (ok) emit toast(u"Scene started");
+    return ok;
+}
+
 // ---------------------------------------------------------------------------
 // API bridge (phone remote)
 // ---------------------------------------------------------------------------
@@ -641,6 +663,14 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
     else if (api == "get_timers") {
         result = QJsonArray::fromVariantList(m_timers.timers());
     }
+    else if (api == "id_select_overlay" || api == "toggle_overlay") {
+        m_overlays.toggleOverlay(data.value(u"id").toString());
+        result = true;
+    }
+    else if (api == "clear_overlays") { m_overlays.clearOverlays(); result = true; }
+    else if (api == "get_overlays") { result = QJsonArray::fromVariantList(m_overlays.overlays()); }
+    else if (api == "start_scene") { result = startScene(data.value(u"id").toString()); }
+    else if (api == "clear_scene") { m_overlays.clearScene(); result = true; }
     else {
         emit toast(u"Unknown API action: " + api);
     }
