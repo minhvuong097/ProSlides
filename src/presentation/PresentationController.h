@@ -15,6 +15,8 @@
 #include "timers/TimerManager.h"
 #include "templates/TemplateLibrary.h"
 #include "overlays/OverlayManager.h"
+#include "audio/AudioPlayer.h"
+#include "triggers/TriggerManager.h"
 
 #include <QObject>
 #include <QVariantList>
@@ -52,6 +54,11 @@ class PresentationController : public QObject
     Q_PROPERTY(QVariantList overlays READ overlays NOTIFY overlaysChanged)
     Q_PROPERTY(QVariantList scenes READ scenes NOTIFY overlaysChanged)
     Q_PROPERTY(QVariantList activeOverlays READ activeOverlays NOTIFY overlaysChanged)
+    Q_PROPERTY(QVariantList audioTracks READ audioTracks NOTIFY audioChanged)
+    Q_PROPERTY(QString audioTrack READ audioTrack NOTIFY audioChanged)
+    Q_PROPERTY(bool audioPlaying READ audioPlaying NOTIFY audioChanged)
+    Q_PROPERTY(QVariantList triggers READ triggers NOTIFY triggersChanged)
+    Q_PROPERTY(bool midiConnected READ midiConnected NOTIFY triggersChanged)
 
 public:
     explicit PresentationController(QObject* parent = nullptr);
@@ -77,6 +84,11 @@ public:
     QVariantList overlays() const { return m_overlays.overlays(); }
     QVariantList scenes() const { return m_overlays.scenes(); }
     QVariantList activeOverlays() const { return m_overlays.activeOverlays(); }
+    QVariantList audioTracks() const { return m_audio.tracks(); }
+    QString audioTrack() const { return m_audio.currentName(); }
+    bool audioPlaying() const { return m_audio.playing(); }
+    QVariantList triggers() const { return m_triggers.triggers(); }
+    bool midiConnected() const { return m_triggers.midiConnected(); }
 
     ShowDocument& document() { return m_document; }
     OutputManager& output() { return m_output; }
@@ -141,6 +153,23 @@ public:
     Q_INVOKABLE void clearOverlays();
     Q_INVOKABLE bool startScene(const QString& id);
 
+    // Audio & triggers
+    Q_INVOKABLE QString addAudioTrack(const QString& path);
+    Q_INVOKABLE bool removeAudioTrack(const QString& id);
+    Q_INVOKABLE void playAudio();
+    Q_INVOKABLE void pauseAudio();
+    Q_INVOKABLE void stopAudio();
+    Q_INVOKABLE void nextAudio();
+    Q_INVOKABLE void previousAudio();
+    Q_INVOKABLE void setAudioVolume(double volume);
+    Q_INVOKABLE void setAudioMuted(bool muted);
+    Q_INVOKABLE void seekAudio(qint64 ms);
+    Q_INVOKABLE bool connectMidi(int device = 0);
+    Q_INVOKABLE void disconnectMidi();
+    Q_INVOKABLE QString addMidiTrigger(const QString& action, int note, bool control = false);
+    Q_INVOKABLE QString addKeyTrigger(const QString& action, const QString& key);
+    Q_INVOKABLE void fireTriggerKey(const QString& key);
+
     void attachEngine(QQmlEngine* engine);
 
     Q_INVOKABLE QVariantMap servicePlan() const;
@@ -163,6 +192,8 @@ signals:
     void timersChanged();
     void templatesChanged();
     void overlaysChanged();
+    void audioChanged();
+    void triggersChanged();
     void errorOccurred(const QString& message);
     void toast(const QString& message);
 
@@ -172,6 +203,7 @@ private slots:
                         const QString& clientId, bool wantsResponse);
     void updateClock();
     void onTimelineAction(const ps::TimelineAction& action);
+    void onTriggerAction(const QString& action, const QJsonObject& data);
 
 private:
     void rebuildSlides();
@@ -198,6 +230,8 @@ private:
     timers::TimerManager m_timers;
     templates::TemplateLibrary m_templates;
     overlays::OverlayManager m_overlays;
+    audio::AudioPlayer m_audio;
+    triggers::TriggerManager m_triggers;
 
     QVariantList m_slides;
     QVariantList m_searchResults;

@@ -188,6 +188,11 @@ Item {
                     width: parent.width
                     height: 100
                 }
+
+                AudioPanel {
+                    width: parent.width
+                    height: 70
+                }
             }
         }
     }

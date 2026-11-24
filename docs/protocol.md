@@ -60,6 +60,11 @@ ProSlides dùng WebSocket (mặc định `ws://<host>:5510`) với envelope gi�
 | `id_select_overlay` / `toggle_overlay` | `{id}` | `true` |
 | `clear_overlays` / `get_overlays` | `{}` | `true` / mảng |
 | `start_scene` / `clear_scene` | `{id}` | `true` |
+| `play_audio` / `pause_audio` / `stop_audio` | `{}` | `true` |
+| `audio_seekto` | `{seconds}` | vị trí ms |
+| `change_volume` / `mute` | `{volume}` / `{value}` | `true` |
+| `get_audio` / `get_playlists` | `{}` | trạng thái / mảng track |
+| `get_triggers` / `connect_midi` | `{}` / `{device}` | mảng / bool |
 
 Các action khác của FreeShow (`play_media`, `start_timer`, `audio_*`, …) có thể
 thêm bằng một nhánh trong `PresentationController::onApiRequested()`.

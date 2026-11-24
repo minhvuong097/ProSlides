@@ -64,6 +64,22 @@ PresentationController::PresentationController(QObject* parent)
     connect(&m_overlays, &overlays::OverlayManager::overlaysChanged,
             this, &PresentationController::overlaysChanged);
 
+    m_triggers.setFilePath(QDir(base).filePath(u"triggers.json"));
+    m_triggers.load();
+    connect(&m_triggers, &triggers::TriggerManager::triggersChanged,
+            this, &PresentationController::triggersChanged);
+    connect(&m_triggers, &triggers::TriggerManager::actionRequested,
+            this, &PresentationController::onTriggerAction);
+    connect(&m_triggers, &triggers::TriggerManager::errorOccurred,
+            this, &PresentationController::errorOccurred);
+
+    connect(&m_audio, &audio::AudioPlayer::tracksChanged,
+            this, &PresentationController::audioChanged);
+    connect(&m_audio, &audio::AudioPlayer::trackChanged,
+            this, &PresentationController::audioChanged);
+    connect(&m_audio, &audio::AudioPlayer::playingChanged,
+            this, &PresentationController::audioChanged);
+
     m_sync.setTransport(&m_remote);
     connect(&m_discovery, &remote::RemoteDiscovery::peerDiscovered,
             this, [this](const remote::RemotePeer& peer) {
@@ -562,6 +578,37 @@ bool PresentationController::startScene(const QString& id)
     return ok;
 }
 
+QString PresentationController::addAudioTrack(const QString& path)
+{
+    return m_audio.addTrack(path);
+}
+bool PresentationController::removeAudioTrack(const QString& id) { return m_audio.removeTrack(id); }
+void PresentationController::playAudio() { m_audio.play(); }
+void PresentationController::pauseAudio() { m_audio.pause(); }
+void PresentationController::stopAudio() { m_audio.stop(); }
+void PresentationController::nextAudio() { m_audio.next(); }
+void PresentationController::previousAudio() { m_audio.previous(); }
+void PresentationController::setAudioVolume(double volume) { m_audio.setVolume(volume); }
+void PresentationController::setAudioMuted(bool muted) { m_audio.setMuted(muted); }
+void PresentationController::seekAudio(qint64 ms) { m_audio.seek(ms); }
+
+bool PresentationController::connectMidi(int device) { return m_triggers.connectMidi(device); }
+void PresentationController::disconnectMidi() { m_triggers.disconnectMidi(); }
+QString PresentationController::addMidiTrigger(const QString& action, int note, bool control)
+{
+    return m_triggers.addMidiTrigger(action, note, control);
+}
+QString PresentationController::addKeyTrigger(const QString& action, const QString& key)
+{
+    return m_triggers.addKeyTrigger(action, key);
+}
+void PresentationController::fireTriggerKey(const QString& key) { m_triggers.triggerKey(key); }
+
+void PresentationController::onTriggerAction(const QString& action, const QJsonObject& data)
+{
+    onApiRequested(action, data, {}, false);
+}
+
 // ---------------------------------------------------------------------------
 // API bridge (phone remote)
 // ---------------------------------------------------------------------------
@@ -671,6 +718,25 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
     else if (api == "get_overlays") { result = QJsonArray::fromVariantList(m_overlays.overlays()); }
     else if (api == "start_scene") { result = startScene(data.value(u"id").toString()); }
     else if (api == "clear_scene") { m_overlays.clearScene(); result = true; }
+    else if (api == "play_audio") { playAudio(); result = true; }
+    else if (api == "pause_audio") { pauseAudio(); result = true; }
+    else if (api == "stop_audio") { stopAudio(); result = true; }
+    else if (api == "audio_seekto") { seekAudio(qint64(data.value(u"seconds").toDouble() * 1000.0)); result = m_audio.position(); }
+    else if (api == "change_volume") { setAudioVolume(data.value(u"volume").toDouble()); result = true; }
+    else if (api == "mute") { setAudioMuted(data.value(u"value").toBool(true)); result = true; }
+    else if (api == "get_audio") {
+        QJsonObject o;
+        o.insert(u"track", m_audio.currentName());
+        o.insert(u"position", m_audio.position());
+        o.insert(u"duration", m_audio.duration());
+        o.insert(u"playing", m_audio.playing());
+        o.insert(u"volume", m_audio.volume());
+        o.insert(u"muted", m_audio.isMuted());
+        result = o;
+    }
+    else if (api == "get_playlists") { result = QJsonArray::fromVariantList(m_audio.tracks()); }
+    else if (api == "get_triggers") { result = QJsonArray::fromVariantList(m_triggers.triggers()); }
+    else if (api == "connect_midi") { result = connectMidi(data.value(u"device").toInt(0)); }
     else {
         emit toast(u"Unknown API action: " + api);
     }

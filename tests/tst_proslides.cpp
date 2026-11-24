@@ -12,6 +12,7 @@
 #include "timers/TimerManager.h"
 #include "templates/TemplateLibrary.h"
 #include "overlays/OverlayManager.h"
+#include "triggers/TriggerManager.h"
 
 using namespace ps;
 
@@ -29,6 +30,7 @@ private slots:
     void timerLifecycle();
     void templateRoundTrip();
     void overlaySceneSwitch();
+    void triggerMapping();
 };
 
 void ProSlidesTest::showFileRoundTrip()
@@ -240,6 +242,27 @@ void ProSlidesTest::overlaySceneSwitch()
     // exercise JSON round trip
     QCOMPARE(overlays::Overlay::fromJson(o1.toJson()).name, u"Lower Third");
     QCOMPARE(overlays::Scene::fromJson(scene.toJson()).overlays.size(), size_t(2));
+}
+
+void ProSlidesTest::triggerMapping()
+{
+    ps::triggers::TriggerManager manager;
+    manager.addMidiTrigger(u"next_slide", 60);
+    manager.addKeyTrigger(u"clear_all", u"PgDown");
+
+    QSignalSpy spy(&manager, SIGNAL(actionRequested(const QString&, const QJsonObject&)));
+    manager.handleMidi(0x90, 0, 60, 100);
+    manager.handleMidi(0x90, 0, 60, 0);   // note-off ignored
+    manager.handleMidi(0x90, 0, 61, 100); // wrong note
+    QCOMPARE(spy.count(), 1);
+
+    manager.triggerKey(u"pgdown");
+    QCOMPARE(spy.count(), 2);
+
+    const auto json = ps::triggers::Trigger::fromJson(
+        ps::triggers::Trigger::fromJson(
+            QJsonObject{{u"action", u"next_slide"}, {u"note", 60}}).toJson());
+    QCOMPARE(json.note, 60);
 }
 
 QTEST_MAIN(ProSlidesTest)

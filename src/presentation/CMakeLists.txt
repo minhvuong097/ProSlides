@@ -18,6 +18,8 @@ target_link_libraries(ps_presentation PUBLIC
     ps_timers
     ps_templates
     ps_overlays
+    ps_audio
+    ps_triggers
     Qt6::Core
     Qt6::Gui
     Qt6::Qml

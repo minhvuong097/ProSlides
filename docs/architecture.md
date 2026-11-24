@@ -81,6 +81,8 @@ Qt RHI có thể cắm thêm trong `FFmpegDecodeWorker::toImage()` nếu cần.
 - `src/timers/TimerManager` — countdown/clock/stopwatch, cảnh báo màu, API remote.
 - `src/templates/TemplateLibrary` — `templates.json` FreeShow, apply/create template.
 - `src/overlays/OverlayManager` — overlay/scene FreeShow, bật/tắt, chuyển scene.
+- `src/audio/AudioPlayer` — playlist audio, QMediaPlayer/QAudioOutput, volume/mute.
+- `src/triggers/TriggerManager` + `MidiInput` — MIDI note/CC (winmm) và key → API action.
 - API remote mở rộng: timeline + scripture + timers + overlays (xem `docs/protocol.md`).
 
 ## 6. Roadmap tiếp theo

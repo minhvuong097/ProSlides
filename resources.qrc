@@ -15,6 +15,7 @@
         <file>qml/components/ScripturePanel.qml</file>
         <file>qml/components/TimerPanel.qml</file>
         <file>qml/components/OverlayPanel.qml</file>
+        <file>qml/components/AudioPanel.qml</file>
         <file>qml/views/MainView.qml</file>
         <file>qml/views/PresenterView.qml</file>
         <file>resources/icons/app.svg</file>
