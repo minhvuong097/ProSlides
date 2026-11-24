@@ -270,7 +270,8 @@ void Document::sortSequence(const QString& seqKey) const
     for (int i = 0; i < elements.size(); ++i)
         children[elements[i].parent.toString()].append(i);
 
-    for (auto& list : children) {
+    for (const auto& parentKey : children.keys()) {
+        auto& list = children[parentKey];
         std::sort(list.begin(), list.end(), [&elements](int a, int b) {
             return elements[a].id < elements[b].id; // RGA: newer sibling first
         });

@@ -341,4 +341,6 @@ PlaybackState FFmpegVideoEngine::state() const { return PlaybackState::Stopped; 
 
 } // namespace ps::media
 
+#if defined(PS_HAS_FFMPEG)
 #include "FFmpegVideoEngine.moc"
+#endif
