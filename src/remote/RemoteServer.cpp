@@ -2,6 +2,7 @@
 
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QHostAddress>
 #include <QUuid>
 
 namespace ps::remote {

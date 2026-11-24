@@ -5,6 +5,7 @@
 #include <QUuid>
 #include <QDateTime>
 
+#include <algorithm>
 #include <utility>
 
 namespace ps {

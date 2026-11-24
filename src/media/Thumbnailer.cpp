@@ -1,8 +1,8 @@
 #include "Thumbnailer.h"
 
 #include <QImageReader>
-#include <QFileIconProvider>
 #include <QFileInfo>
+#include <QColor>
 
 namespace ps::media {
 
@@ -26,8 +26,9 @@ QImage Thumbnailer::thumbnail(const QString& path)
         image = reader.read();
     }
     if (image.isNull()) {
-        QFileIconProvider icons;
-        image = icons.icon(QFileInfo(path)).pixmap(m_size).toImage();
+        // Video/audio files: draw a neutral placeholder (no QtWidgets needed).
+        image = QImage(m_size, QImage::Format_ARGB32);
+        image.fill(QColor(u"#232329"));
     }
     if (!image.isNull()) m_cache.insert(path, image);
     emit ready(path, image);

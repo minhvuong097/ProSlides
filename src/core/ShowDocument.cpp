@@ -1,6 +1,7 @@
 #include "ShowDocument.h"
 
 #include <algorithm>
+#include <iterator>
 
 namespace ps {
 

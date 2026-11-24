@@ -76,7 +76,6 @@ Item {
     }
 
     // Keyboard shortcuts — MxU-style fast operation
-    Shortcut { sequence: StandardKey.MoveToNextPage; onActivated: ProSlides.nextSlide() }
     Shortcut { sequence: "Right"; onActivated: ProSlides.nextSlide() }
     Shortcut { sequence: "Left"; onActivated: ProSlides.previousSlide() }
     Shortcut { sequence: "Space"; onActivated: ProSlides.nextSlide() }

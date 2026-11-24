@@ -3,7 +3,7 @@
 #include <QQmlEngine>
 #include <QQmlComponent>
 #include <QQuickWindow>
-#include <QApplication>
+#include <QGuiApplication>
 #include <QScreen>
 
 namespace ps::output {
@@ -25,7 +25,7 @@ DisplayOutput::DisplayOutput(int screenIndex, QQmlEngine* engine, QObject* paren
 void DisplayOutput::showFullscreen()
 {
     if (!m_window) return;
-    const auto screens = QApplication::screens();
+    const auto screens = QGuiApplication::screens();
     if (m_screenIndex >= 0 && m_screenIndex < screens.size())
         m_window->setScreen(screens.at(m_screenIndex));
     m_window->showFullScreen();

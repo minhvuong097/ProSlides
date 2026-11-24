@@ -9,6 +9,7 @@
 #include <QHostInfo>
 #include <QNetworkInterface>
 #include <QMetaObject>
+#include <cmath>
 
 namespace ps::presentation {
 
