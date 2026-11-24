@@ -83,6 +83,25 @@ PresentationController::PresentationController(QObject* parent)
     connect(&m_output, &output::OutputManager::recordingChanged,
             this, &PresentationController::recordingChanged);
 
+    m_backup.setDataDirectory(base);
+    m_backup.refresh();
+    connect(&m_backup, &backup::BackupManager::backupsChanged,
+            this, &PresentationController::backupsChanged);
+    connect(&m_backup, &backup::BackupManager::errorOccurred,
+            this, &PresentationController::errorOccurred);
+
+    connect(&m_planningCenter, &providers::PlanningCenterProvider::plansChanged,
+            this, &PresentationController::plansChanged);
+    connect(&m_planningCenter, &providers::PlanningCenterProvider::errorOccurred,
+            this, &PresentationController::errorOccurred);
+    connect(&m_planningCenter, &providers::PlanningCenterProvider::planImported,
+            this, [this](const QString&) { emit toast(u"Planning Center plan imported"); });
+
+    connect(&m_cloud, &cloud::CloudSyncClient::connectedChanged,
+            this, &PresentationController::cloudChanged);
+    connect(&m_cloud, &cloud::CloudSyncClient::errorOccurred,
+            this, &PresentationController::errorOccurred);
+
     m_sync.setTransport(&m_remote);
     connect(&m_discovery, &remote::RemoteDiscovery::peerDiscovered,
             this, [this](const remote::RemotePeer& peer) {
@@ -619,6 +638,44 @@ void PresentationController::stopRecording()
     emit toast(u"Recording saved");
 }
 
+QString PresentationController::backupNow(const QString& label)
+{
+    const QString id = m_backup.backupNow(label);
+    if (!id.isEmpty()) emit toast(u"Backup created: " + id);
+    return id;
+}
+bool PresentationController::restoreBackup(const QString& id)
+{
+    const bool ok = m_backup.restore(id);
+    if (ok) {
+        QString error;
+        m_repository.reindexFromDisk(&error);
+        emit toast(u"Backup restored");
+    }
+    return ok;
+}
+void PresentationController::configurePlanningCenter(const QString& appId, const QString& secret)
+{
+    m_planningCenter.setCredentials(appId, secret);
+}
+void PresentationController::fetchPlans(const QString& from, const QString& to)
+{
+    m_planningCenter.fetch(from, to);
+}
+bool PresentationController::importPlan(const QString& planId)
+{
+    return m_planningCenter.importPlan(planId);
+}
+void PresentationController::connectCloud(const QString& url, const QString& room,
+                                          const QString& token)
+{
+    m_cloud.connectTo(url, room, token);
+}
+void PresentationController::disconnectCloud()
+{
+    m_cloud.disconnectFromServer();
+}
+
 void PresentationController::onTriggerAction(const QString& action, const QJsonObject& data)
 {
     onApiRequested(action, data, {}, false);
@@ -760,6 +817,17 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
         if (recording()) stopRecording();
         else startRecording(data.value(u"path").toString());
         result = recording();
+    }
+    else if (api == "get_backups") { result = QJsonArray::fromVariantList(m_backup.backups()); }
+    else if (api == "create_backup") { result = backupNow(data.value(u"label").toString()); }
+    else if (api == "restore_backup") { result = restoreBackup(data.value(u"id").toString()); }
+    else if (api == "get_plans") { result = QJsonArray::fromVariantList(m_planningCenter.plans()); }
+    else if (api == "fetch_plans") { fetchPlans(data.value(u"from").toString(), data.value(u"to").toString()); result = true; }
+    else if (api == "import_plan") { result = importPlan(data.value(u"id").toString()); }
+    else if (api == "cloud_status") {
+        QJsonObject o;
+        o.insert(u"connected", cloudConnected());
+        result = o;
     }
     else {
         emit toast(u"Unknown API action: " + api);

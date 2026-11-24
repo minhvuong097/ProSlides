@@ -17,6 +17,9 @@
 #include "overlays/OverlayManager.h"
 #include "audio/AudioPlayer.h"
 #include "triggers/TriggerManager.h"
+#include "backup/BackupManager.h"
+#include "providers/PlanningCenterProvider.h"
+#include "cloud/CloudSyncClient.h"
 
 #include <QObject>
 #include <QVariantList>
@@ -60,6 +63,9 @@ class PresentationController : public QObject
     Q_PROPERTY(QVariantList triggers READ triggers NOTIFY triggersChanged)
     Q_PROPERTY(bool midiConnected READ midiConnected NOTIFY triggersChanged)
     Q_PROPERTY(bool recording READ recording NOTIFY recordingChanged)
+    Q_PROPERTY(bool cloudConnected READ cloudConnected NOTIFY cloudChanged)
+    Q_PROPERTY(QVariantList backups READ backups NOTIFY backupsChanged)
+    Q_PROPERTY(QVariantList plans READ plans NOTIFY plansChanged)
 
 public:
     explicit PresentationController(QObject* parent = nullptr);
@@ -91,6 +97,9 @@ public:
     QVariantList triggers() const { return m_triggers.triggers(); }
     bool midiConnected() const { return m_triggers.midiConnected(); }
     bool recording() const { return m_output.recording(); }
+    bool cloudConnected() const { return m_cloud.connected(); }
+    QVariantList backups() const { return m_backup.backups(); }
+    QVariantList plans() const { return m_planningCenter.plans(); }
 
     ShowDocument& document() { return m_document; }
     OutputManager& output() { return m_output; }
@@ -176,6 +185,15 @@ public:
     Q_INVOKABLE bool startRecording(const QString& path);
     Q_INVOKABLE void stopRecording();
 
+    // Backup / content providers / cloud
+    Q_INVOKABLE QString backupNow(const QString& label = {});
+    Q_INVOKABLE bool restoreBackup(const QString& id);
+    Q_INVOKABLE void configurePlanningCenter(const QString& appId, const QString& secret);
+    Q_INVOKABLE void fetchPlans(const QString& from = {}, const QString& to = {});
+    Q_INVOKABLE bool importPlan(const QString& planId);
+    Q_INVOKABLE void connectCloud(const QString& url, const QString& room, const QString& token = {});
+    Q_INVOKABLE void disconnectCloud();
+
     void attachEngine(QQmlEngine* engine);
 
     Q_INVOKABLE QVariantMap servicePlan() const;
@@ -201,6 +219,9 @@ signals:
     void audioChanged();
     void triggersChanged();
     void recordingChanged();
+    void cloudChanged();
+    void backupsChanged();
+    void plansChanged();
     void errorOccurred(const QString& message);
     void toast(const QString& message);
 
@@ -239,6 +260,9 @@ private:
     overlays::OverlayManager m_overlays;
     audio::AudioPlayer m_audio;
     triggers::TriggerManager m_triggers;
+    backup::BackupManager m_backup;
+    providers::PlanningCenterProvider m_planningCenter{&m_repository};
+    cloud::CloudSyncClient m_cloud{m_crdt};
 
     QVariantList m_slides;
     QVariantList m_searchResults;

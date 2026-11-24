@@ -84,6 +84,9 @@ Qt RHI có thể cắm thêm trong `FFmpegDecodeWorker::toImage()` nếu cần.
 - `src/audio/AudioPlayer` — playlist audio, QMediaPlayer/QAudioOutput, volume/mute.
 - `src/triggers/TriggerManager` + `MidiInput` — MIDI note/CC (winmm) và key → API action.
 - `src/recording/OutputRecorder` — FFmpeg encode MP4 từ frame `QQuickWindow::grabWindow()`.
+- `src/backup/BackupManager` — snapshot/restore `Backups/<timestamp>/`, giữ manifest JSON.
+- `src/providers/PlanningCenterProvider` — REST API v2, import plan thành Project.
+- `src/cloud/CloudSyncClient` + `RelayTransport` — SyncSession chạy qua WebSocket relay.
 - Giấy phép: **GPL-3.0** (`LICENSE`), đồng bộ với FreeShow.
 - API remote mở rộng: timeline + scripture + timers + overlays (xem `docs/protocol.md`).
 

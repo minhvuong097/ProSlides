@@ -1,6 +1,7 @@
 #include <QtTest>
 #include <QSignalSpy>
 #include <QDir>
+#include <QFile>
 #include "Types.h"
 #include "ShowFile.h"
 #include "core/ShowDocument.h"
@@ -13,6 +14,7 @@
 #include "templates/TemplateLibrary.h"
 #include "overlays/OverlayManager.h"
 #include "triggers/TriggerManager.h"
+#include "backup/BackupManager.h"
 
 using namespace ps;
 
@@ -31,6 +33,7 @@ private slots:
     void templateRoundTrip();
     void overlaySceneSwitch();
     void triggerMapping();
+    void backupSnapshot();
 };
 
 void ProSlidesTest::showFileRoundTrip()
@@ -263,6 +266,19 @@ void ProSlidesTest::triggerMapping()
         ps::triggers::Trigger::fromJson(
             QJsonObject{{u"action", u"next_slide"}, {u"note", 60}}).toJson());
     QCOMPARE(json.note, 60);
+}
+
+void ProSlidesTest::backupSnapshot()
+{
+    const QString dir = QDir::temp().filePath(u"proslides-backup-test-" + makeId());
+    QDir().mkpath(QDir(dir).filePath(u"Shows"));
+    ps::backup::BackupManager manager;
+    manager.setDataDirectory(dir);
+    const QString id = manager.backupNow(u"Unit test");
+    QVERIFY(!id.isEmpty());
+    QVERIFY(QFile::exists(QDir(dir).filePath(u"Backups/" + id + u"/manifest.json")));
+    QVERIFY(manager.backups().size() >= 1);
+    QDir(dir).removeRecursively();
 }
 
 QTEST_MAIN(ProSlidesTest)

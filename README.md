@@ -85,6 +85,9 @@ Chạy: `build\Release\ProSlides.exe [file.show]`
 | Audio | Playlist backing track, play/pause/next, volume/mute, seek |
 | Trigger | MIDI note/CC và phím tắt → API action (`triggers.json`) |
 | Ghi hình | Ghi output ra MP4 qua FFmpeg (H.264/MPEG-4), điều khiển từ remote |
+| Backup | Snapshot `Shows/` + config + DB vào `Backups/`, restore & prune |
+| Planning Center | Fetch plans qua REST API, import thành service project |
+| Cloud sync | Relay CRDT qua WebSocket, đồng bộ nhiều máy |
 | Trình chiếu | Màn hình audiences fullscreen, confidence monitor, clear/restore |
 | Remote | WebSocket :5510, UDP discovery :5514, API tương thích FreeShow |
 | Tìm kiếm | SQLite FTS5, `unicode61 remove_diacritics 2` (tìm `yeu` ra `yêu`) |
