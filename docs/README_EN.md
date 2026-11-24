@@ -26,7 +26,8 @@
   <a href="#status">Status</a> ·
   <a href="#testing">Testing</a> ·
   <a href="#contributing">Contributing</a> ·
-  <a href="#license">License</a>
+  <a href="#license">License</a> ·
+  <a href="#brand">Trademark</a>
 </p>
 
 Worship presentation software written in C++20 / Qt 6, based on FreeShow's data
@@ -125,3 +126,11 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md). Use the issue templates in
 ## License
 
 **GPL-3.0** — see [LICENSE](../LICENSE).
+
+<a id="brand"></a>
+## Trademark
+
+The name **ProSlides** and the logo assets in `resources/icons/` are brand
+assets, © 2026 minhvuong097 and ProSlides contributors. GPL-3.0 covers source
+code only and does not grant rights to the name or logo. See
+[TRADEMARK.md](../TRADEMARK.md) and [NOTICE](../NOTICE).
