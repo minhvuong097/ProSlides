@@ -20,6 +20,7 @@
 #include "backup/BackupManager.h"
 #include "providers/PlanningCenterProvider.h"
 #include "cloud/CloudSyncClient.h"
+#include "chords/ChordEngine.h"
 
 #include <QObject>
 #include <QVariantList>
@@ -167,6 +168,8 @@ public:
     // Audio & triggers
     Q_INVOKABLE QString addAudioTrack(const QString& path);
     Q_INVOKABLE bool removeAudioTrack(const QString& id);
+    Q_INVOKABLE bool transposeShow(int semitones);
+    Q_INVOKABLE QString detectKey() const;
     Q_INVOKABLE void playAudio();
     Q_INVOKABLE void pauseAudio();
     Q_INVOKABLE void stopAudio();

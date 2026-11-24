@@ -60,6 +60,25 @@ Item {
                     background: Rectangle { radius: Theme.radiusSmall; color: Theme.accent }
                     contentItem: Text { text: addBtn.text; color: Theme.black; font: Theme.smallFont; font.bold: true; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
                 }
+
+                Button {
+                    id: downBtn; text: "K−"; implicitHeight: 34
+                    onClicked: ProSlides.transposeShow(-1)
+                    background: Rectangle { radius: Theme.radiusSmall; color: Theme.surface; border.color: Theme.border }
+                    contentItem: Text { text: downBtn.text; color: Theme.text; font: Theme.smallFont; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                }
+                Button {
+                    id: upBtn; text: "K+"; implicitHeight: 34
+                    onClicked: ProSlides.transposeShow(1)
+                    background: Rectangle { radius: Theme.radiusSmall; color: Theme.surface; border.color: Theme.border }
+                    contentItem: Text { text: upBtn.text; color: Theme.text; font: Theme.smallFont; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                }
+                Text {
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Key " + (ProSlides.detectKey() || "—")
+                    color: Theme.yellow
+                    font: Theme.smallFont
+                }
             }
         }
     }

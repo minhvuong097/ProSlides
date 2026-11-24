@@ -15,6 +15,7 @@
 #include "overlays/OverlayManager.h"
 #include "triggers/TriggerManager.h"
 #include "backup/BackupManager.h"
+#include "chords/ChordEngine.h"
 
 using namespace ps;
 
@@ -34,6 +35,7 @@ private slots:
     void overlaySceneSwitch();
     void triggerMapping();
     void backupSnapshot();
+    void chordTranspose();
 };
 
 void ProSlidesTest::showFileRoundTrip()
@@ -279,6 +281,32 @@ void ProSlidesTest::backupSnapshot()
     QVERIFY(QFile::exists(QDir(dir).filePath(u"Backups/" + id + u"/manifest.json")));
     QVERIFY(manager.backups().size() >= 1);
     QDir(dir).removeRecursively();
+}
+
+void ProSlidesTest::chordTranspose()
+{
+    QCOMPARE(ps::chords::transpose(u"G", 2), u"A");
+    QCOMPARE(ps::chords::transpose(u"G/B", 2), u"A/C#");
+    QCOMPARE(ps::chords::transpose(u"C#m7", -1), u"Cm7");
+    QCOMPARE(ps::chords::transpose(u"Bb", 2, true), u"C");
+
+    Show show;
+    show.id = makeId();
+    Slide slide;
+    slide.id = makeId();
+    Item item;
+    Line line;
+    Chord chord;
+    chord.id = makeId();
+    chord.key = u"G";
+    line.chords.append(chord);
+    item.lines.append(line);
+    slide.items.append(item);
+    show.slides.insert(slide.id, slide);
+
+    ps::chords::transposeShow(show, 2);
+    QCOMPARE(show.slides.begin()->second.items.at(0).lines.at(0).chords.at(0).key, u"A");
+    QCOMPARE(ps::chords::detectKey(show), u"A");
 }
 
 QTEST_MAIN(ProSlidesTest)

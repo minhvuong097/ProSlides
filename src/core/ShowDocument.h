@@ -23,6 +23,8 @@ public:
     const Show& show() const { return m_show; }
     Show& show() { return m_show; }
     void setShow(Show show, bool clearHistory = true);
+    // Replace the document while keeping undo history (for bulk transforms).
+    bool replaceShow(Show show);
 
     QString name() const { return m_show.name; }
     void setName(const QString& name);

@@ -21,6 +21,7 @@ target_link_libraries(ps_presentation PUBLIC
     ps_audio
     ps_triggers
     ps_recording
+    ps_chords
     ps_backup
     ps_providers
     ps_cloud

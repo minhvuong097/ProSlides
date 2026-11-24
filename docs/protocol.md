@@ -65,6 +65,8 @@ ProSlides dùng WebSocket (mặc định `ws://<host>:5510`) với envelope gi�
 | `change_volume` / `mute` | `{volume}` / `{value}` | `true` |
 | `get_audio` / `get_playlists` | `{}` | trạng thái / mảng track |
 | `get_triggers` / `connect_midi` | `{}` / `{device}` | mảng / bool |
+| `transpose_show_up` / `transpose_show_down` | `{}` | `true` |
+| `get_key` | `{}` | `"C"`, `"G"`... |
 | `start_output_recording` | `{path}` | `true` |
 | `stop_output_recording` / `toggle_output_recording` | `{}` / `{path}` | `true` / bool |
 | `get_backups` / `create_backup` / `restore_backup` | `{}` / `{label}` / `{id}` | mảng / id / bool |

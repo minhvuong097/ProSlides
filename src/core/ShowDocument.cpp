@@ -32,6 +32,15 @@ void ShowDocument::setShow(Show show, bool clearHistory)
     emit changed();
 }
 
+bool ShowDocument::replaceShow(Show show)
+{
+    if (show.id.isEmpty()) return false;
+    pushUndo();
+    m_show = std::move(show);
+    commit();
+    return true;
+}
+
 void ShowDocument::setName(const QString& name)
 {
     if (m_show.name == name) return;

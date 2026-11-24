@@ -605,6 +605,21 @@ QString PresentationController::addAudioTrack(const QString& path)
     return m_audio.addTrack(path);
 }
 bool PresentationController::removeAudioTrack(const QString& id) { return m_audio.removeTrack(id); }
+
+bool PresentationController::transposeShow(int semitones)
+{
+    Show updated = m_document.show();
+    chords::transposeShow(updated, semitones);
+    if (!m_document.replaceShow(std::move(updated))) return false;
+    pushOutput();
+    emit toast(u"Transposed " + QString::number(semitones) + u" semitones");
+    return true;
+}
+
+QString PresentationController::detectKey() const
+{
+    return chords::detectKey(m_document.show());
+}
 void PresentationController::playAudio() { m_audio.play(); }
 void PresentationController::pauseAudio() { m_audio.pause(); }
 void PresentationController::stopAudio() { m_audio.stop(); }
@@ -809,6 +824,9 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
     else if (api == "get_playlists") { result = QJsonArray::fromVariantList(m_audio.tracks()); }
     else if (api == "get_triggers") { result = QJsonArray::fromVariantList(m_triggers.triggers()); }
     else if (api == "connect_midi") { result = connectMidi(data.value(u"device").toInt(0)); }
+    else if (api == "transpose_show_up") { result = transposeShow(1); }
+    else if (api == "transpose_show_down") { result = transposeShow(-1); }
+    else if (api == "get_key") { result = detectKey(); }
     else if (api == "start_output_recording") {
         result = startRecording(data.value(u"path").toString());
     }
