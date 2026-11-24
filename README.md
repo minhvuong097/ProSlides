@@ -31,7 +31,9 @@
   <a href="SECURITY.md">Bảo mật</a>
 </p>
 
-Phần mềm trình chiếu worship viết bằng C++20 / Qt 6, lấy cấu trúc dữ liệu của FreeShow làm xương sống và giao diện tối giản kiểu MxU Slides. Đây là dự án đang phát triển; chưa có bản phát hành chính thức.
+**ProSlides** là nền tảng trình chiếu worship chuyên nghiệp được xây dựng bằng C++20 và Qt 6. Dự án kế thừa mô hình dữ liệu mở của FreeShow (show, slide, layout, timeline, remote), áp dụng tư duy giao diện tối giản, thao tác nhanh của MxU Slides, và tận dụng giải mã video phần cứng (D3D11VA/FFmpeg) để vận hành ổn định trên máy cấu hình tầm trung.
+
+Mục tiêu: một ứng dụng gọn nhẹ, mở rộng được, tương thích dữ liệu hiện có, hỗ trợ trình chiếu đa màn hình, điều khiển từ điện thoại và đồng bộ đa thiết bị — không có chi phí runtime của Electron. Đây là dự án đang phát triển; chưa có bản phát hành chính thức.
 
 ---
 

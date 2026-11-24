@@ -31,9 +31,16 @@
   <a href="../SECURITY.md">Security</a>
 </p>
 
-Worship presentation software written in C++20 / Qt 6, based on FreeShow's data
-model with a minimal MxU Slides-style interface. This project is under active
-development; there is no official release yet.
+**ProSlides** is a professional worship presentation platform built with C++20
+and Qt 6. It inherits FreeShow's open data model (shows, slides, layouts,
+timelines and remote protocol), applies the minimal, fast-workflow principles of
+MxU Slides, and uses hardware video decoding (D3D11VA/FFmpeg) to stay stable on
+mid-range hardware.
+
+The goal is a lightweight, extensible application that works with existing
+data, supports multi-display presentation, phone control and multi-device sync —
+without an Electron runtime. This project is under active development; there is
+no official release yet.
 
 ---
 
