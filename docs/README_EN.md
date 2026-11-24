@@ -27,7 +27,8 @@
   <a href="#testing">Testing</a> ·
   <a href="#contributing">Contributing</a> ·
   <a href="#license">License</a> ·
-  <a href="#brand">Trademark</a>
+  <a href="#brand">Trademark</a> ·
+  <a href="../SECURITY.md">Security</a>
 </p>
 
 Worship presentation software written in C++20 / Qt 6, based on FreeShow's data
@@ -134,3 +135,6 @@ The name **ProSlides** and the logo assets in `resources/icons/` are brand
 assets, © 2026 minhvuong097 and ProSlides contributors. GPL-3.0 covers source
 code only and does not grant rights to the name or logo. See
 [TRADEMARK.md](../TRADEMARK.md) and [NOTICE](../NOTICE).
+
+To report a vulnerability, see [SECURITY.md](../SECURITY.md). Please do not
+open a public issue for security bugs.

@@ -38,3 +38,8 @@ Bằng cách gửi PR, bạn đồng ý rằng đóng góp của mình được 
 
 Đừng đổi tên dự án hoặc logo trong PR trừ khi được yêu cầu. Quyền đối với tên và
 logo là riêng biệt với GPL — xem [TRADEMARK.md](TRADEMARK.md).
+
+## Bảo mật
+
+Không gửi lỗ hổng bảo mật qua issue hoặc PR công khai. Xem [SECURITY.md](SECURITY.md)
+để biết kênh báo cáo riêng.

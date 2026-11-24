@@ -27,7 +27,8 @@
   <a href="#testing">Kiểm thử</a> ·
   <a href="#contributing">Đóng góp</a> ·
   <a href="#license">Giấy phép</a> ·
-  <a href="#brand">Thương hiệu</a>
+  <a href="#brand">Thương hiệu</a> ·
+  <a href="SECURITY.md">Bảo mật</a>
 </p>
 
 Phần mềm trình chiếu worship viết bằng C++20 / Qt 6, lấy cấu trúc dữ liệu của FreeShow làm xương sống và giao diện tối giản kiểu MxU Slides. Đây là dự án đang phát triển; chưa có bản phát hành chính thức.
@@ -128,3 +129,5 @@ Xem [CONTRIBUTING.md](CONTRIBUTING.md). Bug và đề xuất tính năng dùng i
 ## Thương hiệu
 
 Tên **ProSlides** và bộ logo trong `resources/icons/` là tài sản thương hiệu, © 2026 minhvuong097 và những người đóng góp dự án. GPL-3.0 chỉ áp dụng cho mã nguồn, **không** cấp quyền dùng tên/logo. Xem [`TRADEMARK.md`](TRADEMARK.md) và [`NOTICE`](NOTICE).
+
+Báo cáo lỗ hổng bảo mật: xem [`SECURITY.md`](SECURITY.md) — vui lòng không mở issue công khai cho lỗ hổng.
