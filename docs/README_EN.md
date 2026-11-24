@@ -9,92 +9,80 @@
 </p>
 
 <p align="center">
-  <img alt="Build" src="https://img.shields.io/badge/build-passing-brightgreen">
-  <img alt="Release" src="https://img.shields.io/badge/release-v0.10.0-blue">
+  <img alt="Language" src="https://img.shields.io/badge/language-C%2B%2B20%20%7C%20Qt%206-blue">
   <img alt="License" src="https://img.shields.io/badge/license-GPL--3.0-blue">
-  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-blue">
-  <img alt="Render" src="https://img.shields.io/badge/render-GPU%20%7C%20FFmpeg-brightgreen">
+  <img alt="Status" src="https://img.shields.io/badge/status-in%20development-orange">
+  <img alt="Platform" src="https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey">
 </p>
 
 <p align="center">
   <a href="#features">Features</a> ·
   <a href="#install">Install</a> ·
   <a href="#quick-start">Quick start</a> ·
-  <a href="#specs">Specs</a> ·
-  <a href="#architecture">Architecture</a> ·
-  <a href="#performance">Performance</a> ·
+  <a href="#layout">Layout</a> ·
+  <a href="#remote">Remote</a> ·
   <a href="#testing">Testing</a> ·
-  <a href="#changelog">Changelog</a> ·
   <a href="#license">License</a>
 </p>
 
-Professional, lightweight worship presentation software written in **C++20 / Qt 6.12**.
-It uses FreeShow's data model as its backbone and MxU Slides' minimal UX as its
-interface direction — no Electron runtime, no Chromium overhead.
+Worship presentation software written in C++20 / Qt 6, using FreeShow's data
+model as its backbone and a minimal MxU Slides-style interface. This README
+describes what exists in the source tree; there is no official release yet.
 
 ## Features
 
-- FreeShow-compatible `.show` files (`[id, Show]`) with unknown-field preservation.
-- SQLite FTS5 search with Vietnamese diacritic folding (`yeu` matches `yêu`).
-- Automerge-style CRDT sync (LWW registers + RGA sequences) over WebSocket or relay.
-- Timeline playback/editor, scripture (`.fsb`), service timers, templates.
-- Overlays/scenes, audio playlists, MIDI/keyboard triggers.
-- Hardware video decode (D3D11VA / DXVA2 / VideoToolbox / VAAPI) via FFmpeg.
-- MP4 output recording, backups, Planning Center import.
-- Phone remote on port 5510 with UDP discovery.
+Modules under `src/`:
+
+- `core` — Show/Slide/Layout/Item types, `.show` files as `[id, Show]`, undo/redo.
+- `persistence` — SQLite + FTS5 indexing and search.
+- `crdt` — LWW + RGA replication with Lamport/vector clocks.
+- `remote` — WebSocket control, UDP discovery, FreeShow-style API.
+- `media`, `output` — video playback (FFmpeg/Qt Multimedia), output display, NDI, MP4 recording.
+- `timeline`, `scripture`, `timers`, `templates`, `overlays`, `audio`, `triggers`, `backup`, `providers`, `cloud`.
+- `qml` — three-pane UI: Service Flow + Media / Slide Grid / Output Preview.
 
 ## Install
+
+Requires Visual Studio 2022 (MSVC, C++20), CMake ≥ 3.25, Qt 6. FFmpeg and NDI SDK are optional.
 
 ```powershell
 $env:CMAKE_PREFIX_PATH = "C:\Qt\6.12.0\msvc2019_64"
 powershell -File scripts/build-windows.ps1 -WithFFmpeg -WithTests
 ```
 
-Output: `build\Release\ProSlides.exe`. See [build-windows.md](build-windows.md).
+See [build-windows.md](build-windows.md).
 
 ## Quick start
 
-1. Paste lyrics like `[C]Amazing grace...` into the **Slides** panel and press **Add slide**.
-2. Press **F5** to present on the audience display.
-3. `Space` advances, `Ctrl+S` saves the `.show` file.
-4. Enable **Remote** and control from your phone — see [protocol.md](protocol.md).
+1. Paste lyrics into the Slides area (`[C]` marks chords), press **Add slide**.
+2. Press **F5** to open the presentation display.
+3. Use `Space` / arrows to navigate, `Ctrl+S` to save.
+4. Enable **Remote** in the top bar to control from a phone.
 
-## Specs
+## Layout
 
-| Item | Value |
-|---|---|
-| Language | C++20, Qt 6.12, QML |
-| Show format | JSON `[id, Show]` (FreeShow compatible) |
-| Database | SQLite 3 + WAL + FTS5 |
-| Sync | Lamport/vector clocks, LWW + RGA CRDT |
-| Remote | WebSocket 5510, UDP discovery 5514 |
-| Video | FFmpeg HW decode → `QVideoSink`; Qt Multimedia fallback |
-| Recording | MP4 H.264/MPEG-4, ~30 fps |
-| Memory | ~40–80 MB idle (no Electron) |
+```
+src/  core/ persistence/ crdt/ remote/ media/ output/ timeline/ scripture/
+      timers/ templates/ overlays/ audio/ triggers/ recording/ backup/
+      providers/ cloud/ presentation/ app/
+qml/  QML interface
+docs/ architecture, protocol, build
+tests/ unit tests
+```
 
-## Architecture
+## Remote
 
-See [architecture.md](architecture.md) and [protocol.md](protocol.md).
-
-## Performance
-
-Hardware D3D11VA decoding on Windows, a dedicated decoder thread, WAL + prepared
-SQLite statements, and a lean QML UI keep the app responsive with multiple 4K loops.
+Protocol and API list: [protocol.md](protocol.md). Data model: [architecture.md](architecture.md).
 
 ## Testing
 
 ```powershell
+cmake --build build --config Release
 ctest --test-dir build -C Release --output-on-failure
 ```
 
-## Changelog
-
-### v0.10.0
-Timeline, scripture, timers, templates, overlays/scenes, audio, triggers, MP4
-recording, backups, Planning Center, cloud relay, new logo, GPL-3.0.
-
-### v0.9.0
-Initial platform: FreeShow data model, SQLite FTS5, CRDT, WebSocket remote, QML UI.
+Tests live in `tests/tst_proslides.cpp`. The source has not been compiled in the
+environment where this repo was created (no Qt/Windows SDK); build with Qt 6 to verify.
 
 ## License
 
