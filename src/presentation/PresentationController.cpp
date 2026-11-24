@@ -20,6 +20,7 @@ PresentationController::PresentationController(QObject* parent)
     QDir().mkpath(base);
     QDir().mkpath(QDir(base).filePath(u"Shows"));
     QDir().mkpath(QDir(base).filePath(u"Media"));
+    QDir().mkpath(QDir(base).filePath(u"Bibles"));
 
     QString dbError;
     if (!m_database.open(&dbError)) emit errorOccurred(dbError);
@@ -32,6 +33,22 @@ PresentationController::PresentationController(QObject* parent)
             this, &PresentationController::onApiRequested);
     connect(&m_remote, &remote::RemoteServer::errorOccurred,
             this, &PresentationController::errorOccurred);
+
+    connect(&m_timeline, &timeline::TimelineEngine::stateChanged,
+            this, &PresentationController::timelineStateChanged);
+    connect(&m_timeline, &timeline::TimelineEngine::positionChanged,
+            this, &PresentationController::timelinePositionChanged);
+    connect(&m_timeline, &timeline::TimelineEngine::actionsChanged,
+            this, &PresentationController::timelineActionsChanged);
+    connect(&m_timeline, &timeline::TimelineEngine::actionTriggered,
+            this, &PresentationController::onTimelineAction);
+    connect(&m_scripture, &scripture::ScriptureProvider::activeReferenceChanged,
+            this, &PresentationController::scriptureChanged);
+    connect(&m_scripture, &scripture::ScriptureProvider::biblesChanged,
+            this, &PresentationController::biblesChanged);
+
+    m_scripture.setDirectory(QDir(base).filePath(u"Bibles"));
+    m_scripture.load();
 
     m_sync.setTransport(&m_remote);
     connect(&m_discovery, &remote::RemoteDiscovery::peerDiscovered,
@@ -56,6 +73,12 @@ int PresentationController::slideCount() const { return m_output.slideCount(); }
 bool PresentationController::remoteEnabled() const { return m_remote.isRunning(); }
 bool PresentationController::modified() const { return m_document.modified(); }
 QString PresentationController::clockText() const { return m_clockText; }
+bool PresentationController::timelinePlaying() const { return m_timeline.playing(); }
+qint64 PresentationController::timelinePosition() const { return m_timeline.position(); }
+QVariantList PresentationController::timelineActions() const { return m_timeline.actions(); }
+QString PresentationController::scriptureReference() const { return m_scripture.activeReference(); }
+QString PresentationController::scriptureText() const { return m_scripture.activeText(); }
+QStringList PresentationController::bibleNames() const { return m_scripture.bibleNames(); }
 
 void PresentationController::updateClock()
 {
@@ -81,6 +104,7 @@ void PresentationController::newShow(const QString& name)
 
     m_document.setShow(std::move(show));
     rebuildSlides();
+    loadTimelineForShow();
     emit showChanged();
 }
 
@@ -93,6 +117,7 @@ bool PresentationController::openShow(const QString& id)
     }
     m_document.setShow(std::move(*show));
     rebuildSlides();
+    loadTimelineForShow();
     emit showChanged();
     emit toast(u"Opened " + m_document.name());
     return true;
@@ -137,6 +162,16 @@ void PresentationController::onDocumentChanged()
 {
     rebuildSlides();
     emit showChanged();
+}
+
+void PresentationController::loadTimelineForShow()
+{
+    const Show& show = m_document.show();
+    const auto it = show.layouts.constFind(show.settings.activeLayout);
+    if (it != show.layouts.constEnd() && it->second.timeline)
+        m_timeline.setTimelineJson(*it->second.timeline);
+    else
+        m_timeline.clear();
 }
 
 void PresentationController::syncShowToCrdt()
@@ -423,6 +458,62 @@ void PresentationController::nextServiceItem()
 }
 
 // ---------------------------------------------------------------------------
+// Timeline / Scripture bridges
+// ---------------------------------------------------------------------------
+void PresentationController::startTimeline()   { m_timeline.start(); }
+void PresentationController::pauseTimeline()   { m_timeline.pause(); }
+void PresentationController::stopTimeline()    { m_timeline.stop(); }
+void PresentationController::seekTimeline(qint64 milliseconds) { m_timeline.seek(milliseconds); }
+
+void PresentationController::addTimelineAction(const QString& name, const QString& type,
+                                               qint64 timeMs, double durationSeconds)
+{
+    m_timeline.addAction(name, type, timeMs, durationSeconds);
+}
+
+bool PresentationController::removeTimelineAction(const QString& id)
+{
+    return m_timeline.removeAction(id);
+}
+
+void PresentationController::onTimelineAction(const TimelineAction& action)
+{
+    if (action.type == u"slide") {
+        const QString slideId = action.data.value(u"id").toString();
+        const int index = m_slideOrder.indexOf(slideId);
+        if (index >= 0) goToSlide(index);
+        else if (action.data.contains(u"index")) goToSlide(action.data.value(u"index").toInt() - 1);
+    } else if (action.type == u"show") {
+        const QString id = action.data.value(u"id").toString();
+        if (!id.isEmpty()) openShow(id);
+    } else if (action.type == u"action") {
+        const auto triggers = action.data.value(u"triggers").toArray();
+        for (const auto& t : triggers) {
+            const QString api = t.toString();
+            if (api.isEmpty()) continue;
+            onApiRequested(api, action.data.value(u"actionValues").toObject(), {}, false);
+        }
+    }
+}
+
+QVariantList PresentationController::scriptureSearch(const QString& query)
+{
+    return m_scripture.search(query);
+}
+
+bool PresentationController::openScripture(const QString& reference)
+{
+    if (!m_scripture.openReference(reference)) return false;
+    // Create a scripture slide so the passage is ready to present.
+    addLyricSlide(m_scripture.activeReference(), m_scripture.activeText());
+    return true;
+}
+
+bool PresentationController::scriptureNext() { return m_scripture.openNextVerse(); }
+bool PresentationController::scripturePrevious() { return m_scripture.openPreviousVerse(); }
+bool PresentationController::setActiveBible(const QString& id) { return m_scripture.setActiveBible(id); }
+
+// ---------------------------------------------------------------------------
 // API bridge (phone remote)
 // ---------------------------------------------------------------------------
 void PresentationController::onApiRequested(const QString& api, const QJsonObject& data,
@@ -472,6 +563,38 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
         QJsonArray arr;
         for (const auto& p : m_repository.listProjects()) arr.append(p.toJson());
         result = arr;
+    }
+    else if (api == "start_timeline") { startTimeline(); result = true; }
+    else if (api == "pause_timeline") { pauseTimeline(); result = true; }
+    else if (api == "stop_timeline") { stopTimeline(); result = true; }
+    else if (api == "set_timeline_time") {
+        seekTimeline(qint64(data.value(u"seconds").toDouble() * 1000.0));
+        result = m_timeline.position();
+    }
+    else if (api == "get_timeline") {
+        QJsonObject o;
+        o.insert(u"position", m_timeline.position());
+        o.insert(u"duration", qint64(m_timeline.duration()));
+        o.insert(u"playing", m_timeline.playing());
+        o.insert(u"actions", QJsonArray::fromVariantList(m_timeline.actions()));
+        result = o;
+    }
+    else if (api == "search_scripture") {
+        QJsonArray arr;
+        const auto verses = m_scripture.search(data.value(u"query").toString());
+        for (const auto& v : verses) arr.append(QJsonValue::fromVariant(v));
+        result = arr;
+    }
+    else if (api == "start_scripture") {
+        result = openScripture(data.value(u"reference").toString());
+    }
+    else if (api == "scripture_next") { result = scriptureNext(); }
+    else if (api == "scripture_previous") { result = scripturePrevious(); }
+    else if (api == "get_scripture") {
+        QJsonObject o;
+        o.insert(u"reference", m_scripture.activeReference());
+        o.insert(u"text", m_scripture.activeText());
+        result = o;
     }
     else {
         emit toast(u"Unknown API action: " + api);

@@ -34,9 +34,17 @@ Item {
         Rectangle { anchors.top: servicePanel.bottom; anchors.left: parent.left; anchors.right: parent.right; height: 1; color: Theme.border }
 
         MediaLibrary {
+            id: mediaLibrary
             anchors.left: parent.left
             anchors.right: parent.right
             anchors.top: servicePanel.bottom
+            anchors.bottom: scripturePanel.top
+        }
+
+        ScripturePanel {
+            id: scripturePanel
+            anchors.left: parent.left
+            anchors.right: parent.right
             anchors.bottom: parent.bottom
         }
     }
@@ -50,12 +58,19 @@ Item {
         color: Theme.border
     }
 
+    TimelinePanel {
+        id: timelinePanel
+        anchors.left: centerSeparator.right
+        anchors.right: rightColumn.left
+        anchors.bottom: parent.bottom
+    }
+
     SlideGrid {
         id: slideGrid
         anchors.left: centerSeparator.right
         anchors.right: rightColumn.left
         anchors.top: topBar.bottom
-        anchors.bottom: parent.bottom
+        anchors.bottom: timelinePanel.top
     }
 
     Rectangle {

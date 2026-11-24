@@ -6,6 +6,8 @@
 #include "persistence/Database.h"
 #include "persistence/ShowRepository.h"
 #include "crdt/Document.h"
+#include "timeline/TimelineEngine.h"
+#include "scripture/Bible.h"
 
 using namespace ps;
 
@@ -18,6 +20,8 @@ private slots:
     void lyricSlideParsing();
     void crdtConverges();
     void ftsVietnameseSearch();
+    void timelineTriggers();
+    void scriptureReferenceParsing();
 };
 
 void ProSlidesTest::showFileRoundTrip()
@@ -130,6 +134,55 @@ void ProSlidesTest::ftsVietnameseSearch()
     const auto hits = repo.search(u"yeu chua");
     QVERIFY(hits.size() >= 1);
     QCOMPARE(hits.first().slideId, slide.id);
+}
+
+void ProSlidesTest::timelineTriggers()
+{
+    ps::timeline::TimelineEngine engine;
+    Timeline timeline;
+    TimelineAction a;
+    a.id = makeId();
+    a.name = u"Next song";
+    a.type = u"slide";
+    a.time = 10;
+    timeline.actions.push_back(a);
+    engine.setTimeline(timeline);
+
+    QSignalSpy spy(&engine, SIGNAL(actionTriggered(const TimelineAction&)));
+    engine.start();
+    QTest::qWait(60);
+    QCOMPARE(spy.count(), 1);
+    QCOMPARE(engine.duration(), qint64(10));
+}
+
+void ProSlidesTest::scriptureReferenceParsing()
+{
+    scripture::Bible bible;
+    bible.name = u"Test Bible";
+    scripture::Book book;
+    book.number = 43;
+    book.name = u"John";
+    book.abbreviation = u"Jn";
+    scripture::Chapter chapter;
+    chapter.number = 3;
+    scripture::Verse verse;
+    verse.number = 16;
+    verse.text = u"For God so loved the world";
+    chapter.verses.append(verse);
+    book.chapters.append(chapter);
+    bible.books.append(book);
+
+    const auto ref = scripture::parseReference(u"John 3:16", bible);
+    QVERIFY(ref.valid);
+    QCOMPARE(ref.book, 43);
+    QCOMPARE(ref.chapter, 3);
+    QCOMPARE(ref.verse, 16);
+    QCOMPARE(scripture::referenceToString(ref, bible), u"John 3:16");
+
+    const auto bytes = scripture::encodeBibleFile(bible);
+    const auto loaded = scripture::decodeBibleFile(bytes);
+    QVERIFY(loaded.ok);
+    QCOMPARE(loaded.bible.books.size(), 1);
 }
 
 QTEST_MAIN(ProSlidesTest)

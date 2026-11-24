@@ -76,6 +76,8 @@ add_subdirectory(src/crdt)
 add_subdirectory(src/remote)
 add_subdirectory(src/media)
 add_subdirectory(src/output)
+add_subdirectory(src/timeline)
+add_subdirectory(src/scripture)
 add_subdirectory(src/presentation)
 add_subdirectory(src/app)
 

@@ -72,10 +72,18 @@ Qt RHI có thể cắm thêm trong `FFmpegDecodeWorker::toImage()` nếu cần.
 
 `NdiOutput` là no-op khi không build với `PS_ENABLE_NDI`.
 
-## 5. Roadmap
+## 5. Đã bổ sung (v0.10)
 
-- Timeline editor trực quan (keyframe easing)
-- Scripture/Bible provider, Planning Center,Canva (như contentProviders của FreeShow)
+- `src/timeline/TimelineEngine` — playback engine, trigger action theo ms, loop,
+  editor QML `TimelinePanel`.
+- `src/scripture/` — Bible `.fsb` [id, Bible], parse reference, tìm kiếm và
+  index FTS5 `verses_fts`; tạo slide kinh thánh từ remote/UI.
+- API remote mở rộng: timeline + scripture (xem `docs/protocol.md`).
+
+## 6. Roadmap tiếp theo
+
+- Keyframe easing trực quan cho style timeline
+- Content providers (Planning Center, Canva) như FreeShow
 - MIDI/HID trigger, audio routing, recording
-- Theme/template editor và theme JSON tương thích FreeShow
+- Theme/template editor tương thích FreeShow
 - Cloud sync qua CRDT relay server

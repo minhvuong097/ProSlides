@@ -10,6 +10,8 @@
 #include "media/MediaLibrary.h"
 #include "media/Thumbnailer.h"
 #include "output/OutputManager.h"
+#include "timeline/TimelineEngine.h"
+#include "scripture/ScriptureProvider.h"
 
 #include <QObject>
 #include <QVariantList>
@@ -36,6 +38,12 @@ class PresentationController : public QObject
     Q_PROPERTY(bool remoteEnabled READ remoteEnabled NOTIFY remoteChanged)
     Q_PROPERTY(bool modified READ modified NOTIFY showChanged)
     Q_PROPERTY(QString clockText READ clockText NOTIFY tick)
+    Q_PROPERTY(bool timelinePlaying READ timelinePlaying NOTIFY timelineStateChanged)
+    Q_PROPERTY(qint64 timelinePosition READ timelinePosition NOTIFY timelinePositionChanged)
+    Q_PROPERTY(QVariantList timelineActions READ timelineActions NOTIFY timelineActionsChanged)
+    Q_PROPERTY(QString scriptureReference READ scriptureReference NOTIFY scriptureChanged)
+    Q_PROPERTY(QString scriptureText READ scriptureText NOTIFY scriptureChanged)
+    Q_PROPERTY(QStringList bibleNames READ bibleNames NOTIFY biblesChanged)
 
 public:
     explicit PresentationController(QObject* parent = nullptr);
@@ -50,6 +58,12 @@ public:
     bool remoteEnabled() const;
     bool modified() const;
     QString clockText() const;
+    bool timelinePlaying() const;
+    qint64 timelinePosition() const;
+    QVariantList timelineActions() const;
+    QString scriptureReference() const;
+    QString scriptureText() const;
+    QStringList bibleNames() const;
 
     ShowDocument& document() { return m_document; }
     OutputManager& output() { return m_output; }
@@ -85,6 +99,22 @@ public:
     Q_INVOKABLE void closeDisplays();
     Q_INVOKABLE void scanMedia(const QString& directory);
 
+    // Timeline
+    Q_INVOKABLE void startTimeline();
+    Q_INVOKABLE void pauseTimeline();
+    Q_INVOKABLE void stopTimeline();
+    Q_INVOKABLE void seekTimeline(qint64 milliseconds);
+    Q_INVOKABLE void addTimelineAction(const QString& name, const QString& type,
+                                       qint64 timeMs, double durationSeconds);
+    Q_INVOKABLE bool removeTimelineAction(const QString& id);
+
+    // Scripture
+    Q_INVOKABLE QVariantList scriptureSearch(const QString& query);
+    Q_INVOKABLE bool openScripture(const QString& reference);
+    Q_INVOKABLE bool scriptureNext();
+    Q_INVOKABLE bool scripturePrevious();
+    Q_INVOKABLE bool setActiveBible(const QString& id);
+
     void attachEngine(QQmlEngine* engine);
 
     Q_INVOKABLE QVariantMap servicePlan() const;
@@ -99,6 +129,11 @@ signals:
     void mediaFilesChanged();
     void remoteChanged();
     void tick();
+    void timelineStateChanged();
+    void timelinePositionChanged(qint64 ms);
+    void timelineActionsChanged();
+    void scriptureChanged();
+    void biblesChanged();
     void errorOccurred(const QString& message);
     void toast(const QString& message);
 
@@ -107,6 +142,7 @@ private slots:
     void onApiRequested(const QString& api, const QJsonObject& data,
                         const QString& clientId, bool wantsResponse);
     void updateClock();
+    void onTimelineAction(const ps::TimelineAction& action);
 
 private:
     void rebuildSlides();
@@ -115,6 +151,7 @@ private:
     QVariantMap slideToMap(const Id& id, int index) const;
     QJsonArray showsForRemote() const;
     void setLayoutFromRemote(const QString& layoutId);
+    void loadTimelineForShow();
     QQmlEngine* m_engine = nullptr;
 
     Database m_database;
@@ -127,6 +164,8 @@ private:
     media::MediaLibrary m_mediaLibrary;
     media::Thumbnailer m_thumbnailer;
     output::OutputManager m_output;
+    timeline::TimelineEngine m_timeline;
+    scripture::ScriptureProvider m_scripture;
 
     QVariantList m_slides;
     QVariantList m_searchResults;

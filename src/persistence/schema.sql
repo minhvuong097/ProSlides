@@ -191,6 +191,24 @@ CREATE TRIGGER IF NOT EXISTS slides_au AFTER UPDATE ON slides BEGIN
 END;
 
 -- ---------------------------------------------------------------------------
+-- Scripture (FreeShow .fsb content + full-text index)
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS bibles (
+    id       TEXT PRIMARY KEY,
+    name     TEXT NOT NULL,
+    metadata TEXT,
+    copyright TEXT
+);
+CREATE VIRTUAL TABLE IF NOT EXISTS verses_fts USING fts5(
+    bible_id UNINDEXED,
+    book,
+    chapter UNINDEXED,
+    verse UNINDEXED,
+    text,
+    tokenize='unicode61 remove_diacritics 2'
+);
+
+-- ---------------------------------------------------------------------------
 -- Overlays / templates (kept as JSON, FreeShow Config/*.json compatible)
 -- ---------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS overlays (

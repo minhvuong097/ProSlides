@@ -13,6 +13,8 @@ target_link_libraries(ps_presentation PUBLIC
     ps_remote
     ps_media
     ps_output
+    ps_timeline
+    ps_scripture
     Qt6::Core
     Qt6::Gui
     Qt6::Qml

@@ -46,6 +46,13 @@ ProSlides dùng WebSocket (mặc định `ws://<host>:5510`) với envelope gi�
 | `start_show` | `{id}` | `true` |
 | `change_layout` | `{layoutId}` | `true` |
 | `get_show_layout` / `get_projects` | `{}` | mảng |
+| `start_timeline` / `pause_timeline` / `stop_timeline` | `{}` | `true` |
+| `set_timeline_time` | `{seconds:number}` | vị trí ms |
+| `get_timeline` | `{}` | `{position, duration, playing, actions}` |
+| `search_scripture` | `{query}` | mảng kết quả |
+| `start_scripture` | `{reference}` | `true` (tạo slide) |
+| `scripture_next` / `scripture_previous` | `{}` | `true` |
+| `get_scripture` | `{}` | `{reference, text}` |
 
 Các action khác của FreeShow (`play_media`, `start_timer`, `audio_*`, …) có thể
 thêm bằng một nhánh trong `PresentationController::onApiRequested()`.
