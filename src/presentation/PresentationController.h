@@ -2,6 +2,7 @@
 
 #include "core/Types.h"
 #include "core/ShowDocument.h"
+#include "persistence/Database.h"
 #include "persistence/ShowRepository.h"
 #include "crdt/Document.h"
 #include "crdt/SyncSession.h"

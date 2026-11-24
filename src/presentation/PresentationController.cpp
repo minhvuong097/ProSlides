@@ -1,5 +1,7 @@
 #include "PresentationController.h"
 
+#include "core/ShowFile.h"
+
 #include <QDir>
 #include <QStandardPaths>
 #include <QFile>
@@ -155,7 +157,7 @@ void PresentationController::newShow(const QString& name)
     Layout layout;
     layout.id = layoutId;
     layout.name = QStringLiteral(u"Main");
-    show.layouts.insert(layoutId, layout);
+    show.layouts.insert_or_assign(layoutId, std::move(layout));
     show.settings.activeLayout = layoutId;
 
     m_document.setShow(std::move(show));
@@ -254,11 +256,11 @@ QVariantMap PresentationController::slideToMap(const Id& id, int index) const
     m.insert(QStringLiteral(u"id"), id);
     m.insert(QStringLiteral(u"index"), index);
     if (it != m_document.show().slides.end()) {
-        m.insert(QStringLiteral(u"group"), it->group.value_or(QString{}));
-        m.insert(QStringLiteral(u"title"), it->plainText().section(u'\n', 0, 0));
-        m.insert(QStringLiteral(u"text"), it->plainText());
-        m.insert(QStringLiteral(u"notes"), it->notes);
-        m.insert(QStringLiteral(u"key"), it->key.value_or(QString{}));
+        m.insert(QStringLiteral(u"group"), it->second.group.value_or(QString{}));
+        m.insert(QStringLiteral(u"title"), it->second.plainText().section(u'\n', 0, 0));
+        m.insert(QStringLiteral(u"text"), it->second.plainText());
+        m.insert(QStringLiteral(u"notes"), it->second.notes);
+        m.insert(QStringLiteral(u"key"), it->second.key.value_or(QString{}));
     }
     return m;
 }
@@ -289,7 +291,7 @@ void PresentationController::pushOutput()
     for (const auto& id : m_slideOrder) {
         const auto it = m_document.show().slides.find(id);
         if (it == m_document.show().slides.end()) continue;
-        slides.append(it->toJson());
+        slides.append(it->second.toJson());
     }
     m_output.setSlides(slides);
 }
@@ -733,7 +735,7 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
     else if (api == remote::Api::GetSlide) {
         const QString id = data.value(QStringLiteral(u"slideId")).toString();
         const auto it = m_document.show().slides.find(id);
-        result = it != m_document.show().slides.end() ? it->toJson() : QJsonValue::Null;
+        result = it != m_document.show().slides.end() ? it->second.toJson() : QJsonValue::Null;
     }
     else if (api == remote::Api::StartShow) { openShow(data.value(QStringLiteral(u"id")).toString()); result = true; }
     else if (api == remote::Api::ChangeLayout) { setLayoutFromRemote(data.value(QStringLiteral(u"layoutId")).toString()); result = true; }
