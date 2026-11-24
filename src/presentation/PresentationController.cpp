@@ -471,6 +471,70 @@ QJsonArray PresentationController::showsForRemote() const
     return out;
 }
 
+QVariantList PresentationController::projects() const
+{
+    QVariantList out;
+    for (const auto& project : m_repository.listProjects()) {
+        QVariantMap item;
+        item.insert(QStringLiteral(u"id"), project.id);
+        item.insert(QStringLiteral(u"name"), project.name);
+        item.insert(QStringLiteral(u"items"), int(project.shows.size()));
+        out.append(item);
+    }
+    return out;
+}
+
+QString PresentationController::createProject(const QString& name)
+{
+    Project project;
+    project.id = makeId();
+    project.name = name.isEmpty() ? QStringLiteral(u"New Service") : name;
+    project.created = nowMillis();
+    project.parent = QStringLiteral(u"root");
+    if (!m_repository.saveProject(project)) {
+        emit errorOccurred(QStringLiteral(u"Cannot create project"));
+        return {};
+    }
+    emit projectsChanged();
+    return project.id;
+}
+
+bool PresentationController::addProjectItem(const QString& projectId, const QString& showId,
+                                            const QString& name)
+{
+    auto project = m_repository.loadProject(projectId);
+    if (!project) return false;
+    ProjectShowRef ref;
+    ref.id = showId.isEmpty() ? makeId() : showId;
+    ref.name = name.isEmpty() ? showId : name;
+    ref.type = ShowType::Show;
+    project->shows.push_back(std::move(ref));
+    if (!m_repository.saveProject(*project)) return false;
+    emit projectsChanged();
+    emit stateChanged();
+    return true;
+}
+
+bool PresentationController::removeProjectItem(const QString& projectId, int index)
+{
+    auto project = m_repository.loadProject(projectId);
+    if (!project || index < 0 || index >= int(project->shows.size())) return false;
+    project->shows.erase(project->shows.begin() + index);
+    if (!m_repository.saveProject(*project)) return false;
+    emit projectsChanged();
+    emit stateChanged();
+    return true;
+}
+
+bool PresentationController::deleteProject(const QString& id)
+{
+    if (!m_repository.removeProject(id)) return false;
+    if (m_activeProjectId == id) m_activeProjectId.clear();
+    emit projectsChanged();
+    emit stateChanged();
+    return true;
+}
+
 QVariantMap PresentationController::servicePlan() const
 {
     QVariantMap out;
@@ -753,6 +817,17 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
         for (const auto& p : m_repository.listProjects()) arr.append(p.toJson());
         result = arr;
     }
+    else if (api == "create_project") { result = createProject(data.value(QStringLiteral(u"name")).toString()); }
+    else if (api == "add_to_project") {
+        result = addProjectItem(data.value(QStringLiteral(u"projectId")).toString(),
+                                data.value(QStringLiteral(u"showId")).toString(),
+                                data.value(QStringLiteral(u"name")).toString());
+    }
+    else if (api == "remove_project_item") {
+        result = removeProjectItem(data.value(QStringLiteral(u"projectId")).toString(),
+                                   data.value(QStringLiteral(u"index")).toInt());
+    }
+    else if (api == "delete_project") { result = deleteProject(data.value(QStringLiteral(u"id")).toString()); }
     else if (api == "start_timeline") { startTimeline(); result = true; }
     else if (api == "pause_timeline") { pauseTimeline(); result = true; }
     else if (api == "stop_timeline") { stopTimeline(); result = true; }

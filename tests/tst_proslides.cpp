@@ -36,6 +36,7 @@ private slots:
     void triggerMapping();
     void backupSnapshot();
     void chordTranspose();
+    void projectCrud();
 };
 
 void ProSlidesTest::showFileRoundTrip()
@@ -307,6 +308,30 @@ void ProSlidesTest::chordTranspose()
     ps::chords::transposeShow(show, 2);
     QCOMPARE(show.slides.begin()->second.items.at(0).lines.at(0).chords.at(0).key, QStringLiteral(u"A"));
     QCOMPARE(ps::chords::detectKey(show), QStringLiteral(u"A"));
+}
+
+void ProSlidesTest::projectCrud()
+{
+    Database db(QStringLiteral(u":memory:"));
+    QVERIFY(db.open());
+    ShowRepository repo(db);
+    repo.setDataDirectory(QDir::tempPath());
+
+    Project project;
+    project.id = makeId();
+    project.name = QStringLiteral(u"Sunday Service");
+    project.created = nowMillis();
+    ProjectShowRef ref;
+    ref.id = makeId();
+    ref.name = QStringLiteral(u"Battle Belongs");
+    project.shows.push_back(ref);
+
+    QVERIFY(repo.saveProject(project));
+    const auto loaded = repo.loadProject(project.id);
+    QVERIFY(loaded.has_value());
+    QCOMPARE(loaded->shows.size(), size_t(1));
+    QCOMPARE(loaded->name, project.name);
+    QVERIFY(repo.removeProject(project.id));
 }
 
 QTEST_MAIN(ProSlidesTest)

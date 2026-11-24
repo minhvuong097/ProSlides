@@ -68,6 +68,8 @@ class PresentationController : public QObject
     Q_PROPERTY(bool cloudConnected READ cloudConnected NOTIFY cloudChanged)
     Q_PROPERTY(QVariantList backups READ backups NOTIFY backupsChanged)
     Q_PROPERTY(QVariantList plans READ plans NOTIFY plansChanged)
+    Q_PROPERTY(QVariantList projects READ projects NOTIFY projectsChanged)
+    Q_PROPERTY(QString activeProjectId READ activeProjectId NOTIFY stateChanged)
 
 public:
     explicit PresentationController(QObject* parent = nullptr);
@@ -102,6 +104,8 @@ public:
     bool cloudConnected() const { return m_cloud.connected(); }
     QVariantList backups() const { return m_backup.backups(); }
     QVariantList plans() const { return m_planningCenter.plans(); }
+    QVariantList projects() const;
+    QString activeProjectId() const { return m_activeProjectId; }
 
     ShowDocument& document() { return m_document; }
     output::OutputManager& output() { return m_output; }
@@ -200,6 +204,11 @@ public:
 
     void attachEngine(QQmlEngine* engine);
 
+    Q_INVOKABLE QString createProject(const QString& name);
+    Q_INVOKABLE bool addProjectItem(const QString& projectId, const QString& showId,
+                                     const QString& name);
+    Q_INVOKABLE bool removeProjectItem(const QString& projectId, int index);
+    Q_INVOKABLE bool deleteProject(const QString& id);
     Q_INVOKABLE QVariantMap servicePlan() const;
     Q_INVOKABLE bool openProject(const QString& id);
     Q_INVOKABLE void nextServiceItem();
@@ -226,6 +235,7 @@ signals:
     void cloudChanged();
     void backupsChanged();
     void plansChanged();
+    void projectsChanged();
     void errorOccurred(const QString& message);
     void toast(const QString& message);
 

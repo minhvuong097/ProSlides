@@ -71,6 +71,8 @@ ProSlides dùng WebSocket (mặc định `ws://<host>:5510`) với envelope gi�
 | `stop_output_recording` / `toggle_output_recording` | `{}` / `{path}` | `true` / bool |
 | `get_backups` / `create_backup` / `restore_backup` | `{}` / `{label}` / `{id}` | mảng / id / bool |
 | `get_plans` / `fetch_plans` / `import_plan` | `{}` / `{from,to}` / `{id}` | mảng / `true` / bool |
+| `create_project` / `delete_project` | `{name}` / `{id}` | project id / bool |
+| `add_to_project` / `remove_project_item` | `{projectId, showId, name}` / `{projectId, index}` | bool |
 | `cloud_status` | `{}` | `{connected}` |
 
 Các action khác của FreeShow (`play_media`, `start_timer`, `audio_*`, …) có thể

@@ -51,6 +51,7 @@ Các module đã có trong `src/`:
 | `media`, `output` | Video FFmpeg/Qt Multimedia, màn hình output, NDI, ghi hình MP4 |
 | `timeline`, `scripture`, `timers` | Timeline playback, Kinh Thánh `.fsb`, hẹn giờ dịch vụ |
 | `chords` | Chuyển hợp âm cả show, nhận diện key, slash chord |
+| Service Flow | Tạo project, thêm/xóa item, mở và điều hướng theo service |
 | `templates`, `overlays`, `audio`, `triggers` | Template, overlay/scene, playlist audio, MIDI/phím tắt |
 | `backup`, `providers`, `cloud` | Sao lưu, Planning Center, relay CRDT |
 | `presentation`, `app` | Controller trung tâm và entry point |
