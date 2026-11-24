@@ -1,0 +1,15 @@
+build/
+build-*/
+out/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+*.user
+*.sln
+*.vcxproj*
+.vs/
+.DS_Store
+*.show
+*.db
+*.db-wal
+*.db-shm

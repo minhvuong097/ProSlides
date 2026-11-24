@@ -1,0 +1,136 @@
+#include <QtTest>
+#include <QDir>
+#include "Types.h"
+#include "ShowFile.h"
+#include "core/ShowDocument.h"
+#include "persistence/Database.h"
+#include "persistence/ShowRepository.h"
+#include "crdt/Document.h"
+
+using namespace ps;
+
+class ProSlidesTest : public QObject
+{
+    Q_OBJECT
+
+private slots:
+    void showFileRoundTrip();
+    void lyricSlideParsing();
+    void crdtConverges();
+    void ftsVietnameseSearch();
+};
+
+void ProSlidesTest::showFileRoundTrip()
+{
+    Show show;
+    show.id = makeId();
+    show.name = u"Sunday Service";
+
+    Slide slide;
+    slide.id = makeId();
+    slide.group = u"Worship Set";
+    slide.notes = u"Pray before song";
+    Item item;
+    item.type = ItemType::Text;
+    Line line;
+    line.align = u"center";
+    TextPart part;
+    part.value = u"Amazing grace";
+    part.style = u"color:#fff;";
+    line.text.push_back(part);
+    item.lines.push_back(line);
+    slide.items.push_back(item);
+    show.slides.insert(slide.id, slide);
+
+    Layout layout;
+    layout.id = makeId();
+    layout.name = u"Main";
+    SlideData ref;
+    ref.id = slide.id;
+    layout.slides.push_back(ref);
+    show.layouts.insert(layout.id, layout);
+    show.settings.activeLayout = layout.id;
+
+    const auto bytes = encodeShowFile(show);
+    const auto result = decodeShowFile(bytes);
+    QVERIFY(result.ok);
+    QCOMPARE(result.show.id, show.id);
+    QCOMPARE(result.show.name, show.name);
+    QCOMPARE(result.show.slides.size(), size_t(1));
+    QCOMPARE(result.show.slides.begin()->second.items.at(0).plainText(), u"Amazing grace");
+
+    // FreeShow files are [id, Show] tuples.
+    const auto doc = QJsonDocument::fromJson(bytes);
+    QVERIFY(doc.isArray());
+    QCOMPARE(doc.array().size(), 2);
+}
+
+void ProSlidesTest::lyricSlideParsing()
+{
+    ShowDocument doc;
+    const Id id = doc.addLyricSlide(u"Worship", u"[C]When all [G]see is the battle\nYou see my victory", u"C");
+    QVERIFY(!id.isEmpty());
+    const auto& slide = doc.show().slides.at(id);
+    QCOMPARE(slide.items.size(), size_t(2));
+    QCOMPARE(slide.items.at(0).lines.at(0).chords.size(), size_t(2));
+    QCOMPARE(slide.items.at(0).lines.at(0).chords.at(0).key, u"C");
+    QCOMPARE(slide.items.at(0).lines.at(0).plainText(), u"When all see is the battle");
+    QVERIFY(doc.canUndo());
+    QVERIFY(doc.undo());
+    QVERIFY(!doc.show().slides.contains(id));
+}
+
+void ProSlidesTest::crdtConverges()
+{
+    crdt::Document a(u"actor-a");
+    crdt::Document b(u"actor-b");
+
+    a.set({ u"slides", u"s1", u"notes" }, u"Hello from A");
+    b.set({ u"slides", u"s1", u"notes" }, u"Hello from B");
+
+    const auto aOps = a.operationsSince({});
+    const auto bOps = b.operationsSince({});
+    QVERIFY(b.applyBatch(aOps));
+    QVERIFY(a.applyBatch(bOps));
+
+    QCOMPARE(a.get({ u"slides", u"s1", u"notes" }).toString(),
+             b.get({ u"slides", u"s1", u"notes" }).toString());
+
+    // Edge insertion also converges.
+    a.insert({ u"order" }, 0, u"first");
+    b.applyBatch(a.operationsSince(b.vectorClock()));
+    QCOMPARE(a.sequence({ u"order" }).size(), b.sequence({ u"order" }).size());
+}
+
+void ProSlidesTest::ftsVietnameseSearch()
+{
+    Database db(u":memory:");
+    QString error;
+    QVERIFY2(db.open(&error), qPrintable(error));
+    ShowRepository repo(db);
+    repo.setDataDirectory(QDir::tempPath());
+
+    Show show;
+    show.id = makeId();
+    show.name = u"Thờ phượng";
+    Slide slide;
+    slide.id = makeId();
+    slide.group = u"Chúa là tình yêu";
+    Item item;
+    item.type = ItemType::Text;
+    Line line;
+    TextPart part;
+    part.value = u"Yêu Chúa hết lòng";
+    line.text.push_back(part);
+    item.lines.push_back(line);
+    slide.items.push_back(item);
+    show.slides.insert(slide.id, slide);
+
+    QVERIFY(repo.saveShow(show, &error));
+    const auto hits = repo.search(u"yeu chua");
+    QVERIFY(hits.size() >= 1);
+    QCOMPARE(hits.first().slideId, slide.id);
+}
+
+QTEST_MAIN(ProSlidesTest)
+#include "tst_proslides.moc"
