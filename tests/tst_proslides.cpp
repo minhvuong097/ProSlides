@@ -58,7 +58,7 @@ void ProSlidesTest::showFileRoundTrip()
     line.text.push_back(part);
     item.lines.push_back(line);
     slide.items.push_back(item);
-    show.slides.insert(slide.id, slide);
+    show.slides.insert_or_assign(slide.id, slide);
 
     Layout layout;
     layout.id = makeId();
@@ -66,7 +66,7 @@ void ProSlidesTest::showFileRoundTrip()
     SlideData ref;
     ref.id = slide.id;
     layout.slides.push_back(ref);
-    show.layouts.insert(layout.id, layout);
+    show.layouts.insert_or_assign(layout.id, layout);
     show.settings.activeLayout = layout.id;
 
     const auto bytes = encodeShowFile(show);
@@ -142,7 +142,7 @@ void ProSlidesTest::ftsVietnameseSearch()
     line.text.push_back(part);
     item.lines.push_back(line);
     slide.items.push_back(item);
-    show.slides.insert(slide.id, slide);
+    show.slides.insert_or_assign(slide.id, slide);
 
     QVERIFY(repo.saveShow(show, &error));
     const auto hits = repo.search(QStringLiteral(u"yeu chua"));
@@ -299,10 +299,10 @@ void ProSlidesTest::chordTranspose()
     Chord chord;
     chord.id = makeId();
     chord.key = QStringLiteral(u"G");
-    line.chords.append(chord);
-    item.lines.append(line);
-    slide.items.append(item);
-    show.slides.insert(slide.id, slide);
+    line.chords.push_back(chord);
+    item.lines.push_back(line);
+    slide.items.push_back(item);
+    show.slides.insert_or_assign(slide.id, slide);
 
     ps::chords::transposeShow(show, 2);
     QCOMPARE(show.slides.begin()->second.items.at(0).lines.at(0).chords.at(0).key, QStringLiteral(u"A"));

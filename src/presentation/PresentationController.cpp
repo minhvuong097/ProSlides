@@ -735,7 +735,7 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
     else if (api == remote::Api::GetSlide) {
         const QString id = data.value(QStringLiteral(u"slideId")).toString();
         const auto it = m_document.show().slides.find(id);
-        result = it != m_document.show().slides.end() ? it->second.toJson() : QJsonValue::Null;
+        result = it != m_document.show().slides.end() ? QJsonValue(it->second.toJson()) : QJsonValue(QJsonValue::Null);
     }
     else if (api == remote::Api::StartShow) { openShow(data.value(QStringLiteral(u"id")).toString()); result = true; }
     else if (api == remote::Api::ChangeLayout) { setLayoutFromRemote(data.value(QStringLiteral(u"layoutId")).toString()); result = true; }

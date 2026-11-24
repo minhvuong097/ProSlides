@@ -65,7 +65,23 @@ QString transpose(const QString& chord, int semitones, bool preferFlats)
     const int value = rootToSemitone(match.captured(0));
     if (value < 0) return chord;
     const QString newRoot = semitoneToRoot(value + semitones, preferFlats);
-    return newRoot + chord.mid(rootLength);
+    QString suffix = chord.mid(rootLength);
+
+    // Slash chords ("G/B"): the bass note must be transposed as well.
+    const int slash = suffix.lastIndexOf(u'/');
+    if (slash >= 0) {
+        const QString bass = suffix.mid(slash + 1);
+        const auto bassMatch = rootPattern().match(bass);
+        if (bassMatch.hasMatch() && bassMatch.capturedStart(0) == 0) {
+            const int bassValue = rootToSemitone(bassMatch.captured(0));
+            if (bassValue >= 0) {
+                suffix = suffix.left(slash + 1)
+                       + semitoneToRoot(bassValue + semitones, preferFlats)
+                       + bass.mid(bassMatch.captured(0).size());
+            }
+        }
+    }
+    return newRoot + suffix;
 }
 
 void transposeShow(Show& show, int semitones, bool preferFlats)

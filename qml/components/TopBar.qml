@@ -28,7 +28,7 @@ Item {
 
         Column {
             anchors.verticalCenter: parent.verticalCenter
-            Text { text: "ProSlides"; color: Theme.text; font: Theme.bodyFont; font.bold: true }
+            Text { text: "ProSlides"; color: Theme.text; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
             Text {
                 text: ProSlides.activeShowName + (ProSlides.modified ? "  •" : "")
                 color: Theme.textDim; font: Theme.smallFont
@@ -72,7 +72,7 @@ Item {
             implicitHeight: 32
             onClicked: ProSlides.startPresenting()
             background: Rectangle { radius: Theme.radiusSmall; color: Theme.accent }
-            contentItem: Text { text: presentBtn.text; color: Theme.black; font: Theme.smallFont; font.bold: true; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+            contentItem: Text { text: presentBtn.text; color: Theme.black; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }); horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
         }
     }
 }

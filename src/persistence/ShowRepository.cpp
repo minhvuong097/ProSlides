@@ -19,6 +19,9 @@ QString jsonString(const QJsonObject& o)
     return QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact));
 }
 
+// QString() is a *null* string; Qt binds it as SQL NULL and breaks NOT NULL columns.
+QString nn(const QString& s) { return s.isNull() ? QStringLiteral(u"") : s; }
+
 void bindOrNull(QSqlQuery& q, const QString& name, const std::optional<QString>& v)
 {
     if (v) q.bindValue(name, *v);
@@ -78,7 +81,7 @@ bool ShowRepository::indexShow(const Show& show, const QString& filePath)
               u"used=excluded.used, tags=excluded.tags, meta_key=excluded.meta_key,"
               u"json=excluded.json"));
     q.bindValue(QStringLiteral(u":id"), show.id);
-    q.bindValue(QStringLiteral(u":name"), show.name);
+    q.bindValue(QStringLiteral(u":name"), nn(show.name));
     q.bindValue(QStringLiteral(u":path"), filePath);
     bindOrNull(q, QStringLiteral(u":origin"), show.origin);
     bindOrNull(q, QStringLiteral(u":category"), show.category);
@@ -121,8 +124,8 @@ void ShowRepository::indexSlides(const Show& show)
         q.bindValue(QStringLiteral(u":show"), show.id);
         bindOrNull(q, QStringLiteral(u":group"), slide.group);
         q.bindValue(QStringLiteral(u":title"), slide.plainText().section(u'\n', 0, 0));
-        q.bindValue(QStringLiteral(u":text"), slide.plainText());
-        q.bindValue(QStringLiteral(u":notes"), slide.notes);
+        q.bindValue(QStringLiteral(u":text"), nn(slide.plainText()));
+        q.bindValue(QStringLiteral(u":notes"), nn(slide.notes));
         bindOrNull(q, QStringLiteral(u":key"), slide.key);
         bindOrNull(q, QStringLiteral(u":color"), slide.color);
         bindOrNull(q, QStringLiteral(u":bg"), slide.settings.backgroundImage);
@@ -144,8 +147,8 @@ void ShowRepository::indexLayouts(const Show& show)
                   u"VALUES (:id,:show,:name,:notes,:active,:pos,:json)"));
         q.bindValue(QStringLiteral(u":id"), id);
         q.bindValue(QStringLiteral(u":show"), show.id);
-        q.bindValue(QStringLiteral(u":name"), layout.name);
-        q.bindValue(QStringLiteral(u":notes"), layout.notes);
+        q.bindValue(QStringLiteral(u":name"), nn(layout.name));
+        q.bindValue(QStringLiteral(u":notes"), nn(layout.notes));
         q.bindValue(QStringLiteral(u":active"), (id == show.settings.activeLayout) ? 1 : 0);
         q.bindValue(QStringLiteral(u":pos"), lpos++);
         q.bindValue(QStringLiteral(u":json"), jsonString(layout.toJson()));
@@ -180,7 +183,7 @@ void ShowRepository::indexMedia(const Show& show)
                   u"VALUES (:id,:show,:name,:path,:type,:videoType,:muted,:loop,:json)"));
         q.bindValue(QStringLiteral(u":id"), id);
         q.bindValue(QStringLiteral(u":show"), show.id);
-        q.bindValue(QStringLiteral(u":name"), m.name);
+        q.bindValue(QStringLiteral(u":name"), nn(m.name));
         q.bindValue(QStringLiteral(u":path"), m.path);
         q.bindValue(QStringLiteral(u":type"), mediaTypeToString(m.type));
         bindOrNull(q, QStringLiteral(u":videoType"), m.videoType);
@@ -206,7 +209,7 @@ void ShowRepository::indexTimeline(const QString& ownerType, const Id& ownerId,
         q.bindValue(QStringLiteral(u":ownerId"), ownerId);
         q.bindValue(QStringLiteral(u":time"), action.time);
         q.bindValue(QStringLiteral(u":duration"), action.duration);
-        q.bindValue(QStringLiteral(u":name"), action.name);
+        q.bindValue(QStringLiteral(u":name"), nn(action.name));
         q.bindValue(QStringLiteral(u":type"), action.type);
         bindOrNull(q, QStringLiteral(u":color"), action.color);
         q.bindValue(QStringLiteral(u":json"), jsonString(action.toJson()));
@@ -323,9 +326,9 @@ bool ShowRepository::saveProject(const Project& project, QString* error)
               u"parent=excluded.parent, modified=excluded.modified, used=excluded.used,"
               u"archived=excluded.archived, json=excluded.json"));
     q.bindValue(QStringLiteral(u":id"), project.id);
-    q.bindValue(QStringLiteral(u":name"), project.name);
-    q.bindValue(QStringLiteral(u":notes"), project.notes);
-    q.bindValue(QStringLiteral(u":parent"), project.parent);
+    q.bindValue(QStringLiteral(u":name"), nn(project.name));
+    q.bindValue(QStringLiteral(u":notes"), nn(project.notes));
+    q.bindValue(QStringLiteral(u":parent"), nn(project.parent));
     q.bindValue(QStringLiteral(u":created"), project.created);
     if (project.modified) q.bindValue(QStringLiteral(u":modified"), *project.modified);
     if (project.used) q.bindValue(QStringLiteral(u":used"), *project.used);

@@ -13,7 +13,7 @@ Row {
             height: 20
             radius: 10
             color: Theme.surfaceHover
-            Text { anchors.centerIn: parent; text: modelData; color: Theme.yellow; font: Theme.smallFont; font.bold: true }
+            Text { anchors.centerIn: parent; text: modelData; color: Theme.yellow; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }) }
         }
     }
 }

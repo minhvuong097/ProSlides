@@ -58,7 +58,7 @@ Item {
                     text: "Add slide"
                     onClicked: addSlide()
                     background: Rectangle { radius: Theme.radiusSmall; color: Theme.accent }
-                    contentItem: Text { text: addBtn.text; color: Theme.black; font: Theme.smallFont; font.bold: true; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                    contentItem: Text { text: addBtn.text; color: Theme.black; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }); horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
                 }
 
                 Button {

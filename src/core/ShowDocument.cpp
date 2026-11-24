@@ -103,11 +103,12 @@ Id ShowDocument::addSlide(Slide slide, const QString& group)
     pushUndo();
     if (slide.id.isEmpty()) slide.id = makeId();
     if (!group.isEmpty()) slide.group = group;
-    m_show.slides[slide.id] = std::move(slide);
-    appendToLayout(slide.id);
+    const Id slideId = slide.id;
+    m_show.slides[slideId] = std::move(slide);
+    appendToLayout(slideId);
     commit();
-    emit slideAdded(slide.id);
-    return slide.id;
+    emit slideAdded(slideId);
+    return slideId;
 }
 
 bool ShowDocument::updateSlide(const Id& id, Slide slide)

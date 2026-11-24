@@ -39,7 +39,8 @@ QtObject {
             contentItem: Text {
                 text: btn.text
                 color: Theme.black
-                font: btn.font
+                font.family: btn.font.family
+                font.pixelSize: btn.font.pixelSize
                 font.bold: true
                 horizontalAlignment: Text.AlignHCenter
                 verticalAlignment: Text.AlignVCenter

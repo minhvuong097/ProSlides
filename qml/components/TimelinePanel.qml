@@ -26,7 +26,7 @@ Item {
         anchors.topMargin: 8
         spacing: 8
 
-        Text { anchors.verticalCenter: parent.verticalCenter; text: "Timeline"; color: Theme.text; font: Theme.smallFont; font.bold: true }
+        Text { anchors.verticalCenter: parent.verticalCenter; text: "Timeline"; color: Theme.text; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }) }
 
         Button {
             id: playBtn; text: ProSlides.timelinePlaying ? "❚❚" : "▶"; width: 30; implicitHeight: 24
@@ -70,7 +70,7 @@ Item {
 
     Connections {
         target: ProSlides
-        onTimelineActionsChanged: {
+        function onTimelineActionsChanged() {
             timelineModel.clear();
             const actions = ProSlides.timelineActions;
             for (let i = 0; i < actions.length; ++i) timelineModel.append(actions[i]);
@@ -104,7 +104,7 @@ Item {
             Column {
                 anchors.fill: parent
                 anchors.margins: 8
-                Text { text: model.name; color: Theme.black; font.bold: true; font: Theme.smallFont; elide: Text.ElideRight; width: parent.width }
+                Text { text: model.name; color: Theme.black; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }); elide: Text.ElideRight; width: parent.width }
                 Text { text: (model.time / 1000).toFixed(1) + "s  ·  " + model.duration + "s"; color: Theme.black; font: Theme.smallFont }
             }
             MouseArea {

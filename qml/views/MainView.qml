@@ -61,21 +61,21 @@ Item {
     TimelinePanel {
         id: timelinePanel
         anchors.left: centerSeparator.right
-        anchors.right: rightColumn.left
+        anchors.right: outputPanel.left
         anchors.bottom: parent.bottom
     }
 
     SlideGrid {
         id: slideGrid
         anchors.left: centerSeparator.right
-        anchors.right: rightColumn.left
+        anchors.right: outputPanel.left
         anchors.top: topBar.bottom
         anchors.bottom: timelinePanel.top
     }
 
     Rectangle {
         id: rightSeparator
-        anchors.right: rightColumn.left
+        anchors.right: outputPanel.left
         anchors.top: topBar.bottom
         anchors.bottom: parent.bottom
         width: 1

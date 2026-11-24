@@ -20,7 +20,7 @@ Item {
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
             spacing: 8
-            Text { anchors.verticalCenter: parent.verticalCenter; text: "Scripture"; color: Theme.text; font: Theme.smallFont; font.bold: true }
+            Text { anchors.verticalCenter: parent.verticalCenter; text: "Scripture"; color: Theme.text; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }) }
             ComboBox {
                 id: bibleBox
                 width: 130; height: 26
@@ -87,7 +87,7 @@ Item {
             Column {
                 anchors.left: parent.left; anchors.leftMargin: 6
                 anchors.verticalCenter: parent.verticalCenter
-                Text { text: model.reference; color: Theme.yellow; font: Theme.smallFont; font.bold: true }
+                Text { text: model.reference; color: Theme.yellow; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }) }
                 Text { text: model.text; color: Theme.textDim; font.pixelSize: 10; elide: Text.ElideRight; width: results.width - 20 }
             }
         }

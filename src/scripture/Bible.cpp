@@ -117,7 +117,17 @@ ScriptureRef parseReference(const QString& reference, const Bible& bible)
     }
     if (bookNumber == 0) return ref;
 
-    const QString tail = needle.mid(consumed).trimmed();
+    // normalizeReferenceText() drops ':' and '-', so take the "chapter:verse" tail from
+    // the raw text: walk the decomposed input until `consumed` kept characters are passed.
+    QString raw = reference.normalized(QString::NormalizationForm_D).toLower();
+    int kept = 0, rawPos = 0;
+    for (; rawPos < raw.size() && kept < consumed; ++rawPos) {
+        const QChar c = raw[rawPos];
+        if (c.category() != QChar::Mark_NonSpacing &&
+            c.category() != QChar::Mark_SpacingCombining &&
+            c.isLetterOrNumber()) ++kept;
+    }
+    const QString tail = raw.mid(rawPos).trimmed();
     static const QRegularExpression pattern(QStringLiteral(u"^(\\d+)\\s*:\\s*(\\d+)(?:\\s*-\\s*(\\d+))?$"));
     const auto match = pattern.match(tail);
     if (!match.hasMatch()) return ref;

@@ -66,7 +66,7 @@ endif()
 # ----------------------------------------------------------------------------
 # Embedded resources (QML + SQL schema) — one library shared by app and tests
 # ----------------------------------------------------------------------------
-add_library(ps_resources STATIC resources.qrc)
+add_library(ps_resources OBJECT resources.qrc)
 target_link_libraries(ps_resources PUBLIC Qt6::Core)
 
 # ----------------------------------------------------------------------------

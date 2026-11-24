@@ -32,7 +32,7 @@ Item {
                 nameField.text = "";
             }
             background: Rectangle { radius: 4; color: Theme.accent }
-            contentItem: Text { text: "+"; color: Theme.black; font.bold: true; font: Theme.smallFont; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+            contentItem: Text { text: "+"; color: Theme.black; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }); horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
         }
     }
 
@@ -64,7 +64,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 text: model.text + (model.running ? "  ▶" : "  ❚❚")
                 color: model.warning ? model.warnColor : Theme.accent
-                font: Theme.bodyFont; font.bold: true
+                font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true })
             }
         }
     }

@@ -20,7 +20,7 @@ Item {
             anchors.rightMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             spacing: 8
-            Text { anchors.verticalCenter: parent.verticalCenter; text: "Media"; color: Theme.text; font: Theme.bodyFont; font.bold: true }
+            Text { anchors.verticalCenter: parent.verticalCenter; text: "Media"; color: Theme.text; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
             TextField {
                 id: searchField
                 width: 150

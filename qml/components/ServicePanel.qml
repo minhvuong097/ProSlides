@@ -19,7 +19,7 @@ Item {
             anchors.leftMargin: 14
             anchors.rightMargin: 12
             spacing: 10
-            Text { anchors.verticalCenter: parent.verticalCenter; text: "Service Flow"; color: Theme.text; font: Theme.bodyFont; font.bold: true }
+            Text { anchors.verticalCenter: parent.verticalCenter; text: "Service Flow"; color: Theme.text; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
             Item { width: 1 }
             Text { anchors.verticalCenter: parent.verticalCenter; text: Qt.formatDateTime(new Date(), "dddd, MMM d, yyyy"); color: Theme.textDim; font: Theme.smallFont }
         }
@@ -44,7 +44,7 @@ Item {
 
     Connections {
         target: ProSlides
-        onSlidesChanged: {
+        function onSlidesChanged() {
             if (serviceModel.count > 0) return;
             for (let i = 0; i < ProSlides.slideCount; ++i) {
                 const slide = ProSlides.slides[i];

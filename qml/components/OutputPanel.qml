@@ -108,7 +108,7 @@ Item {
                 }
                 Row {
                     spacing: 8
-                    Text { text: "C"; color: Theme.yellow; font: Theme.smallFont; font.bold: true }
+                    Text { text: "C"; color: Theme.yellow; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }) }
                     Text { text: (ProSlides.slides[ProSlides.currentIndex] || {}).key || "—"; color: Theme.textDim; font: Theme.smallFont }
                 }
             }
@@ -129,9 +129,9 @@ Item {
 
                 Row {
                     width: parent.width
-                    Text { text: "Service Controls"; color: Theme.text; font: Theme.bodyFont; font.bold: true }
+                    Text { text: "Service Controls"; color: Theme.text; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
                     Item { width: parent.width - 200 }
-                    Text { text: ProSlides.clockText; color: Theme.accent; font: Theme.bodyFont; font.bold: true }
+                    Text { text: ProSlides.clockText; color: Theme.accent; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
                 }
 
                 Rectangle { width: parent.width; height: 1; color: Theme.border }
@@ -142,7 +142,7 @@ Item {
                         id: presentBtn2; text: "Start presenting"
                         onClicked: ProSlides.startPresenting()
                         background: Rectangle { radius: Theme.radiusSmall; color: Theme.accent }
-                        contentItem: Text { text: presentBtn2.text; color: Theme.black; font: Theme.smallFont; font.bold: true; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                        contentItem: Text { text: presentBtn2.text; color: Theme.black; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }); horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
                     }
                     Button {
                         id: restoreBtn; text: "Restore"
