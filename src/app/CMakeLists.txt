@@ -1,4 +1,5 @@
-set(PS_APP_SOURCES main.cpp)
+qt_add_resources(PS_APP_RESOURCES ${CMAKE_SOURCE_DIR}/resources.qrc)
+set(PS_APP_SOURCES main.cpp ${PS_APP_RESOURCES})
 if(WIN32)
     list(APPEND PS_APP_SOURCES ${CMAKE_SOURCE_DIR}/appicon.rc)
 endif()
@@ -6,7 +7,6 @@ endif()
 add_executable(proslides_app ${PS_APP_SOURCES})
 
 target_link_libraries(proslides_app PRIVATE
-    ps_resources
     ps_presentation
     Qt6::Core
     Qt6::Gui

@@ -64,10 +64,9 @@ if(PS_ENABLE_NDI)
 endif()
 
 # ----------------------------------------------------------------------------
-# Embedded resources (QML + SQL schema) — one library shared by app and tests
+# Embedded resources are generated per-target (app and tests) via
+# qt_add_resources in their own CMakeLists.txt.
 # ----------------------------------------------------------------------------
-add_library(ps_resources OBJECT resources.qrc)
-target_link_libraries(ps_resources PUBLIC Qt6::Core)
 
 # ----------------------------------------------------------------------------
 # Project libraries
