@@ -15,6 +15,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 option(PS_BUILD_TESTS "Build unit tests" OFF)
 option(PS_ENABLE_NDI "Enable NewTek NDI output (requires NDI SDK)" OFF)
@@ -63,9 +64,10 @@ if(PS_ENABLE_NDI)
 endif()
 
 # ----------------------------------------------------------------------------
-# Embedded resources (QML + SQL schema)
+# Embedded resources (QML + SQL schema) — one library shared by app and tests
 # ----------------------------------------------------------------------------
-qt_add_resources(PS_RESOURCES resources.qrc)
+add_library(ps_resources STATIC resources.qrc)
+target_link_libraries(ps_resources PUBLIC Qt6::Core)
 
 # ----------------------------------------------------------------------------
 # Project libraries
