@@ -41,5 +41,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ProSlides-Windows
-          path: build/src/app/Release/ProSlides.exe
+          path: build/Release/ProSlides.exe
           if-no-files-found: error
