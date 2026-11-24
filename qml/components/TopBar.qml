@@ -17,10 +17,13 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         spacing: Theme.spacing
 
-        Rectangle {
-            width: 26; height: 26; radius: 7
-            color: Theme.accent
-            Text { anchors.centerIn: parent; text: "P"; color: Theme.black; font.bold: true; font.pixelSize: 15 }
+        Image {
+            width: 30; height: 30
+            source: "qrc:/resources/icons/logo-icon.svg"
+            sourceSize.width: 60
+            sourceSize.height: 60
+            fillMode: Image.PreserveAspectFit
+            smooth: true
         }
 
         Column {

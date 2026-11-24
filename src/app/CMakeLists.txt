@@ -1,7 +1,9 @@
-add_executable(proslides_app
-    main.cpp
-    ${PS_RESOURCES}
-)
+set(PS_APP_SOURCES main.cpp ${PS_RESOURCES})
+if(WIN32)
+    list(APPEND PS_APP_SOURCES ${CMAKE_SOURCE_DIR}/appicon.rc)
+endif()
+
+add_executable(proslides_app ${PS_APP_SOURCES})
 
 target_link_libraries(proslides_app PRIVATE
     ps_presentation
