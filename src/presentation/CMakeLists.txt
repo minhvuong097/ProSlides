@@ -20,6 +20,7 @@ target_link_libraries(ps_presentation PUBLIC
     ps_overlays
     ps_audio
     ps_triggers
+    ps_recording
     Qt6::Core
     Qt6::Gui
     Qt6::Qml

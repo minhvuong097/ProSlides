@@ -83,6 +83,7 @@ add_subdirectory(src/templates)
 add_subdirectory(src/overlays)
 add_subdirectory(src/audio)
 add_subdirectory(src/triggers)
+add_subdirectory(src/recording)
 add_subdirectory(src/presentation)
 add_subdirectory(src/app)
 

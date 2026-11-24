@@ -80,6 +80,9 @@ PresentationController::PresentationController(QObject* parent)
     connect(&m_audio, &audio::AudioPlayer::playingChanged,
             this, &PresentationController::audioChanged);
 
+    connect(&m_output, &output::OutputManager::recordingChanged,
+            this, &PresentationController::recordingChanged);
+
     m_sync.setTransport(&m_remote);
     connect(&m_discovery, &remote::RemoteDiscovery::peerDiscovered,
             this, [this](const remote::RemotePeer& peer) {
@@ -604,6 +607,18 @@ QString PresentationController::addKeyTrigger(const QString& action, const QStri
 }
 void PresentationController::fireTriggerKey(const QString& key) { m_triggers.triggerKey(key); }
 
+bool PresentationController::startRecording(const QString& path)
+{
+    const bool ok = m_output.startRecording(path);
+    if (ok) emit toast(u"Recording started");
+    return ok;
+}
+void PresentationController::stopRecording()
+{
+    m_output.stopRecording();
+    emit toast(u"Recording saved");
+}
+
 void PresentationController::onTriggerAction(const QString& action, const QJsonObject& data)
 {
     onApiRequested(action, data, {}, false);
@@ -737,6 +752,15 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
     else if (api == "get_playlists") { result = QJsonArray::fromVariantList(m_audio.tracks()); }
     else if (api == "get_triggers") { result = QJsonArray::fromVariantList(m_triggers.triggers()); }
     else if (api == "connect_midi") { result = connectMidi(data.value(u"device").toInt(0)); }
+    else if (api == "start_output_recording") {
+        result = startRecording(data.value(u"path").toString());
+    }
+    else if (api == "stop_output_recording") { stopRecording(); result = true; }
+    else if (api == "toggle_output_recording") {
+        if (recording()) stopRecording();
+        else startRecording(data.value(u"path").toString());
+        result = recording();
+    }
     else {
         emit toast(u"Unknown API action: " + api);
     }

@@ -84,6 +84,7 @@ Chạy: `build\Release\ProSlides.exe [file.show]`
 | Overlay/Scene | Đọc `overlays.json`/`scenes.json`, bật/tắt overlay, chuyển scene |
 | Audio | Playlist backing track, play/pause/next, volume/mute, seek |
 | Trigger | MIDI note/CC và phím tắt → API action (`triggers.json`) |
+| Ghi hình | Ghi output ra MP4 qua FFmpeg (H.264/MPEG-4), điều khiển từ remote |
 | Trình chiếu | Màn hình audiences fullscreen, confidence monitor, clear/restore |
 | Remote | WebSocket :5510, UDP discovery :5514, API tương thích FreeShow |
 | Tìm kiếm | SQLite FTS5, `unicode61 remove_diacritics 2` (tìm `yeu` ra `yêu`) |
@@ -100,7 +101,13 @@ Chạy: `build\Release\ProSlides.exe [file.show]`
 
 ---
 
-## 5. Phạm vi hiện tại
+## 5. Giấy phép
+
+**GPL-3.0** — xem file [`LICENSE`](LICENSE). ProSlides kế thừa kiến trúc dữ liệu
+từ FreeShow (cũng GPL-3.0), nên bản phân phối phải giữ nguyên giấy phép copyleft
+và cung cấp mã nguồn khi phân phối binary.
+
+## 6. Phạm vi hiện tại
 
 Bộ source này là **nền tảng hoàn chỉnh, biên dịch được**: data model, persistence,
 CRDT, remote, video backend, output và UI đã được hiện thực. Các phần nâng cao

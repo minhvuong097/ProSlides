@@ -3,6 +3,7 @@
 #include <QDateTime>
 #include <QMetaObject>
 #include <QQmlProperty>
+#include <QQuickWindow>
 
 namespace ps::output {
 
@@ -13,6 +14,11 @@ OutputManager::OutputManager(QObject* parent)
     connect(&m_clock, &QTimer::timeout, this, &OutputManager::updateClock);
     m_clock.start();
     updateClock();
+
+    m_captureTimer.setInterval(33); // ~30 fps
+    connect(&m_captureTimer, &QTimer::timeout, this, &OutputManager::captureFrame);
+    connect(&m_recorder, &recording::OutputRecorder::recordingChanged,
+            this, &OutputManager::recordingChanged);
 }
 
 QJsonObject OutputManager::currentSlide() const
@@ -127,6 +133,36 @@ void OutputManager::updateClock()
 {
     m_clockText = QDateTime::currentDateTime().toString(u"hh:mm:ss");
     emit tick();
+}
+
+bool OutputManager::startRecording(const QString& path)
+{
+    if (m_displays.isEmpty() || !m_displays.first()->window()) return false;
+    const auto* window = m_displays.first()->window();
+    const QSize size(window->width(), window->height());
+    if (!m_recorder.start(path, size)) return false;
+    m_captureTimer.start();
+    return true;
+}
+
+void OutputManager::stopRecording()
+{
+    m_captureTimer.stop();
+    m_recorder.stop();
+}
+
+void OutputManager::toggleRecording(const QString& path)
+{
+    if (m_recorder.recording()) stopRecording();
+    else startRecording(path);
+}
+
+void OutputManager::captureFrame()
+{
+    if (!m_recorder.recording() || m_displays.isEmpty()) return;
+    auto* window = m_displays.first()->window();
+    if (!window) return;
+    m_recorder.pushFrame(window->grabWindow());
 }
 
 void OutputManager::pushToDisplays()

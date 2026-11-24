@@ -59,6 +59,7 @@ class PresentationController : public QObject
     Q_PROPERTY(bool audioPlaying READ audioPlaying NOTIFY audioChanged)
     Q_PROPERTY(QVariantList triggers READ triggers NOTIFY triggersChanged)
     Q_PROPERTY(bool midiConnected READ midiConnected NOTIFY triggersChanged)
+    Q_PROPERTY(bool recording READ recording NOTIFY recordingChanged)
 
 public:
     explicit PresentationController(QObject* parent = nullptr);
@@ -89,6 +90,7 @@ public:
     bool audioPlaying() const { return m_audio.playing(); }
     QVariantList triggers() const { return m_triggers.triggers(); }
     bool midiConnected() const { return m_triggers.midiConnected(); }
+    bool recording() const { return m_output.recording(); }
 
     ShowDocument& document() { return m_document; }
     OutputManager& output() { return m_output; }
@@ -170,6 +172,10 @@ public:
     Q_INVOKABLE QString addKeyTrigger(const QString& action, const QString& key);
     Q_INVOKABLE void fireTriggerKey(const QString& key);
 
+    // Recording
+    Q_INVOKABLE bool startRecording(const QString& path);
+    Q_INVOKABLE void stopRecording();
+
     void attachEngine(QQmlEngine* engine);
 
     Q_INVOKABLE QVariantMap servicePlan() const;
@@ -194,6 +200,7 @@ signals:
     void overlaysChanged();
     void audioChanged();
     void triggersChanged();
+    void recordingChanged();
     void errorOccurred(const QString& message);
     void toast(const QString& message);
 

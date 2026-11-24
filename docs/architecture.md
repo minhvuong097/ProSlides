@@ -83,6 +83,8 @@ Qt RHI có thể cắm thêm trong `FFmpegDecodeWorker::toImage()` nếu cần.
 - `src/overlays/OverlayManager` — overlay/scene FreeShow, bật/tắt, chuyển scene.
 - `src/audio/AudioPlayer` — playlist audio, QMediaPlayer/QAudioOutput, volume/mute.
 - `src/triggers/TriggerManager` + `MidiInput` — MIDI note/CC (winmm) và key → API action.
+- `src/recording/OutputRecorder` — FFmpeg encode MP4 từ frame `QQuickWindow::grabWindow()`.
+- Giấy phép: **GPL-3.0** (`LICENSE`), đồng bộ với FreeShow.
 - API remote mở rộng: timeline + scripture + timers + overlays (xem `docs/protocol.md`).
 
 ## 6. Roadmap tiếp theo

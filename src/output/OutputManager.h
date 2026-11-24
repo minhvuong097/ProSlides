@@ -1,6 +1,7 @@
 #pragma once
 
 #include "DisplayOutput.h"
+#include "recording/OutputRecorder.h"
 
 #include <QObject>
 #include <QJsonObject>
@@ -24,6 +25,8 @@ class OutputManager : public QObject
     Q_PROPERTY(QString transitionType READ transitionType NOTIFY stateChanged)
     Q_PROPERTY(QString clockText READ clockText NOTIFY tick)
     Q_PROPERTY(int displayCount READ displayCount NOTIFY displayCountChanged)
+    Q_PROPERTY(bool recording READ recording NOTIFY recordingChanged)
+    Q_PROPERTY(QString recordingPath READ recordingPath NOTIFY recordingChanged)
 
 public:
     explicit OutputManager(QObject* parent = nullptr);
@@ -31,6 +34,8 @@ public:
     int currentIndex() const { return m_index; }
     int slideCount() const { return m_slides.size(); }
     int displayCount() const { return m_displays.size(); }
+    bool recording() const { return m_recorder.recording(); }
+    QString recordingPath() const { return m_recorder.outputPath(); }
     QJsonObject currentSlide() const;
     bool cleared() const { return m_cleared; }
     QString backgroundPath() const { return m_background; }
@@ -52,6 +57,9 @@ public slots:
     void attachEngine(QQmlEngine* engine);
     bool addDisplay(int screenIndex);
     void removeAllDisplays();
+    Q_INVOKABLE bool startRecording(const QString& path);
+    Q_INVOKABLE void stopRecording();
+    Q_INVOKABLE void toggleRecording(const QString& path);
 
 signals:
     void stateChanged();
@@ -59,9 +67,11 @@ signals:
     void tick();
     void slideChanged(const QJsonObject& slide);
     void displayCountChanged(int count);
+    void recordingChanged(bool recording);
 
 private slots:
     void updateClock();
+    void captureFrame();
 
 private:
     void pushToDisplays();
@@ -76,6 +86,8 @@ private:
     QString m_transition = u"fade";
     QString m_clockText;
     QTimer m_clock;
+    recording::OutputRecorder m_recorder;
+    QTimer m_captureTimer;
 };
 
 } // namespace ps::output
