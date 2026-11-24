@@ -2,8 +2,8 @@
 #include <QSignalSpy>
 #include <QDir>
 #include <QFile>
-#include "Types.h"
-#include "ShowFile.h"
+#include "core/Types.h"
+#include "core/ShowFile.h"
 #include "core/ShowDocument.h"
 #include "persistence/Database.h"
 #include "persistence/ShowRepository.h"
@@ -42,19 +42,19 @@ void ProSlidesTest::showFileRoundTrip()
 {
     Show show;
     show.id = makeId();
-    show.name = u"Sunday Service";
+    show.name = QStringLiteral(u"Sunday Service");
 
     Slide slide;
     slide.id = makeId();
-    slide.group = u"Worship Set";
-    slide.notes = u"Pray before song";
+    slide.group = QStringLiteral(u"Worship Set");
+    slide.notes = QStringLiteral(u"Pray before song");
     Item item;
     item.type = ItemType::Text;
     Line line;
-    line.align = u"center";
+    line.align = QStringLiteral(u"center");
     TextPart part;
-    part.value = u"Amazing grace";
-    part.style = u"color:#fff;";
+    part.value = QStringLiteral(u"Amazing grace");
+    part.style = QStringLiteral(u"color:#fff;");
     line.text.push_back(part);
     item.lines.push_back(line);
     slide.items.push_back(item);
@@ -62,7 +62,7 @@ void ProSlidesTest::showFileRoundTrip()
 
     Layout layout;
     layout.id = makeId();
-    layout.name = u"Main";
+    layout.name = QStringLiteral(u"Main");
     SlideData ref;
     ref.id = slide.id;
     layout.slides.push_back(ref);
@@ -75,7 +75,7 @@ void ProSlidesTest::showFileRoundTrip()
     QCOMPARE(result.show.id, show.id);
     QCOMPARE(result.show.name, show.name);
     QCOMPARE(result.show.slides.size(), size_t(1));
-    QCOMPARE(result.show.slides.begin()->second.items.at(0).plainText(), u"Amazing grace");
+    QCOMPARE(result.show.slides.begin()->second.items.at(0).plainText(), QStringLiteral(u"Amazing grace"));
 
     // FreeShow files are [id, Show] tuples.
     const auto doc = QJsonDocument::fromJson(bytes);
@@ -86,13 +86,13 @@ void ProSlidesTest::showFileRoundTrip()
 void ProSlidesTest::lyricSlideParsing()
 {
     ShowDocument doc;
-    const Id id = doc.addLyricSlide(u"Worship", u"[C]When all [G]see is the battle\nYou see my victory", u"C");
+    const Id id = doc.addLyricSlide(QStringLiteral(u"Worship"), QStringLiteral(u"[C]When all [G]see is the battle\nYou see my victory"), QStringLiteral(u"C"));
     QVERIFY(!id.isEmpty());
     const auto& slide = doc.show().slides.at(id);
     QCOMPARE(slide.items.size(), size_t(2));
     QCOMPARE(slide.items.at(0).lines.at(0).chords.size(), size_t(2));
-    QCOMPARE(slide.items.at(0).lines.at(0).chords.at(0).key, u"C");
-    QCOMPARE(slide.items.at(0).lines.at(0).plainText(), u"When all see is the battle");
+    QCOMPARE(slide.items.at(0).lines.at(0).chords.at(0).key, QStringLiteral(u"C"));
+    QCOMPARE(slide.items.at(0).lines.at(0).plainText(), QStringLiteral(u"When all see is the battle"));
     QVERIFY(doc.canUndo());
     QVERIFY(doc.undo());
     QVERIFY(!doc.show().slides.contains(id));
@@ -100,29 +100,29 @@ void ProSlidesTest::lyricSlideParsing()
 
 void ProSlidesTest::crdtConverges()
 {
-    crdt::Document a(u"actor-a");
-    crdt::Document b(u"actor-b");
+    crdt::Document a(QStringLiteral(u"actor-a"));
+    crdt::Document b(QStringLiteral(u"actor-b"));
 
-    a.set({ u"slides", u"s1", u"notes" }, u"Hello from A");
-    b.set({ u"slides", u"s1", u"notes" }, u"Hello from B");
+    a.set({ QStringLiteral(u"slides"), QStringLiteral(u"s1"), QStringLiteral(u"notes")}, QStringLiteral(u"Hello from A"));
+    b.set({ QStringLiteral(u"slides"), QStringLiteral(u"s1"), QStringLiteral(u"notes")}, QStringLiteral(u"Hello from B"));
 
     const auto aOps = a.operationsSince({});
     const auto bOps = b.operationsSince({});
     QVERIFY(b.applyBatch(aOps));
     QVERIFY(a.applyBatch(bOps));
 
-    QCOMPARE(a.get({ u"slides", u"s1", u"notes" }).toString(),
-             b.get({ u"slides", u"s1", u"notes" }).toString());
+    QCOMPARE(a.get({ QStringLiteral(u"slides"), QStringLiteral(u"s1"), QStringLiteral(u"notes")}).toString(),
+             b.get({ QStringLiteral(u"slides"), QStringLiteral(u"s1"), QStringLiteral(u"notes")}).toString());
 
     // Edge insertion also converges.
-    a.insert({ u"order" }, 0, u"first");
+    a.insert({ QStringLiteral(u"order")}, 0, QStringLiteral(u"first"));
     b.applyBatch(a.operationsSince(b.vectorClock()));
-    QCOMPARE(a.sequence({ u"order" }).size(), b.sequence({ u"order" }).size());
+    QCOMPARE(a.sequence({ QStringLiteral(u"order")}).size(), b.sequence({ QStringLiteral(u"order")}).size());
 }
 
 void ProSlidesTest::ftsVietnameseSearch()
 {
-    Database db(u":memory:");
+    Database db(QStringLiteral(u":memory:"));
     QString error;
     QVERIFY2(db.open(&error), qPrintable(error));
     ShowRepository repo(db);
@@ -130,22 +130,22 @@ void ProSlidesTest::ftsVietnameseSearch()
 
     Show show;
     show.id = makeId();
-    show.name = u"Thờ phượng";
+    show.name = QStringLiteral(u"Thờ phượng");
     Slide slide;
     slide.id = makeId();
-    slide.group = u"Chúa là tình yêu";
+    slide.group = QStringLiteral(u"Chúa là tình yêu");
     Item item;
     item.type = ItemType::Text;
     Line line;
     TextPart part;
-    part.value = u"Yêu Chúa hết lòng";
+    part.value = QStringLiteral(u"Yêu Chúa hết lòng");
     line.text.push_back(part);
     item.lines.push_back(line);
     slide.items.push_back(item);
     show.slides.insert(slide.id, slide);
 
     QVERIFY(repo.saveShow(show, &error));
-    const auto hits = repo.search(u"yeu chua");
+    const auto hits = repo.search(QStringLiteral(u"yeu chua"));
     QVERIFY(hits.size() >= 1);
     QCOMPARE(hits.first().slideId, slide.id);
 }
@@ -156,8 +156,8 @@ void ProSlidesTest::timelineTriggers()
     Timeline timeline;
     TimelineAction a;
     a.id = makeId();
-    a.name = u"Next song";
-    a.type = u"slide";
+    a.name = QStringLiteral(u"Next song");
+    a.type = QStringLiteral(u"slide");
     a.time = 10;
     timeline.actions.push_back(a);
     engine.setTimeline(timeline);
@@ -172,26 +172,26 @@ void ProSlidesTest::timelineTriggers()
 void ProSlidesTest::scriptureReferenceParsing()
 {
     scripture::Bible bible;
-    bible.name = u"Test Bible";
+    bible.name = QStringLiteral(u"Test Bible");
     scripture::Book book;
     book.number = 43;
-    book.name = u"John";
-    book.abbreviation = u"Jn";
+    book.name = QStringLiteral(u"John");
+    book.abbreviation = QStringLiteral(u"Jn");
     scripture::Chapter chapter;
     chapter.number = 3;
     scripture::Verse verse;
     verse.number = 16;
-    verse.text = u"For God so loved the world";
+    verse.text = QStringLiteral(u"For God so loved the world");
     chapter.verses.append(verse);
     book.chapters.append(chapter);
     bible.books.append(book);
 
-    const auto ref = scripture::parseReference(u"John 3:16", bible);
+    const auto ref = scripture::parseReference(QStringLiteral(u"John 3:16"), bible);
     QVERIFY(ref.valid);
     QCOMPARE(ref.book, 43);
     QCOMPARE(ref.chapter, 3);
     QCOMPARE(ref.verse, 16);
-    QCOMPARE(scripture::referenceToString(ref, bible), u"John 3:16");
+    QCOMPARE(scripture::referenceToString(ref, bible), QStringLiteral(u"John 3:16"));
 
     const auto bytes = scripture::encodeBibleFile(bible);
     const auto loaded = scripture::decodeBibleFile(bytes);
@@ -202,7 +202,7 @@ void ProSlidesTest::scriptureReferenceParsing()
 void ProSlidesTest::timerLifecycle()
 {
     ps::timers::TimerManager manager;
-    const QString id = manager.startTimer(u"Pre-service", 1, 0);
+    const QString id = manager.startTimer(QStringLiteral(u"Pre-service"), 1, 0);
     QVERIFY(!id.isEmpty());
     QCOMPARE(manager.activeCount(), 1);
     QVERIFY(manager.pauseTimer(id));
@@ -217,43 +217,43 @@ void ProSlidesTest::templateRoundTrip()
 {
     ps::templates::Template t;
     t.id = makeId();
-    t.name = u"Lyric Dark";
-    t.category = u"Text";
-    t.color = u"#3ddc84";
-    t.settings.insert(u"backgroundColor", u"#000000");
+    t.name = QStringLiteral(u"Lyric Dark");
+    t.category = QStringLiteral(u"Text");
+    t.color = QStringLiteral(u"#3ddc84");
+    t.settings.insert(QStringLiteral(u"backgroundColor"), QStringLiteral(u"#000000"));
 
     const auto obj = t.toJson();
     const auto loaded = ps::templates::Template::fromJson(obj);
     QCOMPARE(loaded.name, t.name);
-    QCOMPARE(loaded.settings.value(u"backgroundColor").toString(), u"#000000");
+    QCOMPARE(loaded.settings.value(QStringLiteral(u"backgroundColor")).toString(), QStringLiteral(u"#000000"));
 }
 
 void ProSlidesTest::overlaySceneSwitch()
 {
     overlays::OverlayManager manager;
     overlays::Overlay o1;
-    o1.id = u"o1";
-    o1.name = u"Lower Third";
+    o1.id = QStringLiteral(u"o1");
+    o1.name = QStringLiteral(u"Lower Third");
     overlays::Overlay o2;
-    o2.id = u"o2";
-    o2.name = u"QR Code";
+    o2.id = QStringLiteral(u"o2");
+    o2.name = QStringLiteral(u"QR Code");
 
     overlays::Scene scene;
-    scene.id = u"s1";
-    scene.name = u"Welcome";
-    scene.overlays = { u"o1", u"o2" };
-    scene.hiddenOverlays = { u"o2" };
+    scene.id = QStringLiteral(u"s1");
+    scene.name = QStringLiteral(u"Welcome");
+    scene.overlays = { QStringLiteral(u"o1"), QStringLiteral(u"o2")};
+    scene.hiddenOverlays = { QStringLiteral(u"o2")};
 
     // exercise JSON round trip
-    QCOMPARE(overlays::Overlay::fromJson(o1.toJson()).name, u"Lower Third");
+    QCOMPARE(overlays::Overlay::fromJson(o1.toJson()).name, QStringLiteral(u"Lower Third"));
     QCOMPARE(overlays::Scene::fromJson(scene.toJson()).overlays.size(), size_t(2));
 }
 
 void ProSlidesTest::triggerMapping()
 {
     ps::triggers::TriggerManager manager;
-    manager.addMidiTrigger(u"next_slide", 60);
-    manager.addKeyTrigger(u"clear_all", u"PgDown");
+    manager.addMidiTrigger(QStringLiteral(u"next_slide"), 60);
+    manager.addKeyTrigger(QStringLiteral(u"clear_all"), QStringLiteral(u"PgDown"));
 
     QSignalSpy spy(&manager, SIGNAL(actionRequested(const QString&, const QJsonObject&)));
     manager.handleMidi(0x90, 0, 60, 100);
@@ -261,34 +261,34 @@ void ProSlidesTest::triggerMapping()
     manager.handleMidi(0x90, 0, 61, 100); // wrong note
     QCOMPARE(spy.count(), 1);
 
-    manager.triggerKey(u"pgdown");
+    manager.triggerKey(QStringLiteral(u"pgdown"));
     QCOMPARE(spy.count(), 2);
 
     const auto json = ps::triggers::Trigger::fromJson(
         ps::triggers::Trigger::fromJson(
-            QJsonObject{{u"action", u"next_slide"}, {u"note", 60}}).toJson());
+            QJsonObject{{QStringLiteral(u"action"), QStringLiteral(u"next_slide")}, {QStringLiteral(u"note"), 60}}).toJson());
     QCOMPARE(json.note, 60);
 }
 
 void ProSlidesTest::backupSnapshot()
 {
-    const QString dir = QDir::temp().filePath(u"proslides-backup-test-" + makeId());
-    QDir().mkpath(QDir(dir).filePath(u"Shows"));
+    const QString dir = QDir::temp().filePath(QStringLiteral(u"proslides-backup-test-")+ makeId());
+    QDir().mkpath(QDir(dir).filePath(QStringLiteral(u"Shows")));
     ps::backup::BackupManager manager;
     manager.setDataDirectory(dir);
-    const QString id = manager.backupNow(u"Unit test");
+    const QString id = manager.backupNow(QStringLiteral(u"Unit test"));
     QVERIFY(!id.isEmpty());
-    QVERIFY(QFile::exists(QDir(dir).filePath(u"Backups/" + id + u"/manifest.json")));
+    QVERIFY(QFile::exists(QDir(dir).filePath(QStringLiteral(u"Backups/")+ id + QStringLiteral(u"/manifest.json"))));
     QVERIFY(manager.backups().size() >= 1);
     QDir(dir).removeRecursively();
 }
 
 void ProSlidesTest::chordTranspose()
 {
-    QCOMPARE(ps::chords::transpose(u"G", 2), u"A");
-    QCOMPARE(ps::chords::transpose(u"G/B", 2), u"A/C#");
-    QCOMPARE(ps::chords::transpose(u"C#m7", -1), u"Cm7");
-    QCOMPARE(ps::chords::transpose(u"Bb", 2, true), u"C");
+    QCOMPARE(ps::chords::transpose(QStringLiteral(u"G"), 2), QStringLiteral(u"A"));
+    QCOMPARE(ps::chords::transpose(QStringLiteral(u"G/B"), 2), QStringLiteral(u"A/C#"));
+    QCOMPARE(ps::chords::transpose(QStringLiteral(u"C#m7"), -1), QStringLiteral(u"Cm7"));
+    QCOMPARE(ps::chords::transpose(QStringLiteral(u"Bb"), 2, true), QStringLiteral(u"C"));
 
     Show show;
     show.id = makeId();
@@ -298,15 +298,15 @@ void ProSlidesTest::chordTranspose()
     Line line;
     Chord chord;
     chord.id = makeId();
-    chord.key = u"G";
+    chord.key = QStringLiteral(u"G");
     line.chords.append(chord);
     item.lines.append(line);
     slide.items.append(item);
     show.slides.insert(slide.id, slide);
 
     ps::chords::transposeShow(show, 2);
-    QCOMPARE(show.slides.begin()->second.items.at(0).lines.at(0).chords.at(0).key, u"A");
-    QCOMPARE(ps::chords::detectKey(show), u"A");
+    QCOMPARE(show.slides.begin()->second.items.at(0).lines.at(0).chords.at(0).key, QStringLiteral(u"A"));
+    QCOMPARE(ps::chords::detectKey(show), QStringLiteral(u"A"));
 }
 
 QTEST_MAIN(ProSlidesTest)

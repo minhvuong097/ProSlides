@@ -32,12 +32,12 @@ void RemoteDiscovery::stop()
 void RemoteDiscovery::broadcast()
 {
     QJsonObject o;
-    o.insert(u"app", u"ProSlides");
-    o.insert(u"name", m_name);
-    o.insert(u"port", m_servicePort);
-    o.insert(u"version", u"0.9.0");
+    o.insert(QStringLiteral(u"app"), QStringLiteral(u"ProSlides"));
+    o.insert(QStringLiteral(u"name"), m_name);
+    o.insert(QStringLiteral(u"port"), m_servicePort);
+    o.insert(QStringLiteral(u"version"), QStringLiteral(u"0.9.0"));
     const auto data = QJsonDocument(o).toJson(QJsonDocument::Compact);
-    m_socket.writeDatagram(data, QHostAddress(u"255.255.255.255"), 5514);
+    m_socket.writeDatagram(data, QHostAddress(QStringLiteral(u"255.255.255.255")), 5514);
 }
 
 void RemoteDiscovery::readPending()
@@ -49,14 +49,14 @@ void RemoteDiscovery::readPending()
         quint16 port = 0;
         m_socket.readDatagram(data.data(), data.size(), &sender, &port);
         const auto obj = QJsonDocument::fromJson(data).object();
-        if (obj.value(u"app").toString() != u"ProSlides") continue;
-        if (obj.value(u"name").toString() == m_name) continue;
+        if (obj.value(QStringLiteral(u"app")).toString() != QStringLiteral(u"ProSlides")) continue;
+        if (obj.value(QStringLiteral(u"name")).toString() == m_name) continue;
 
         RemotePeer peer;
-        peer.name = obj.value(u"name").toString();
-        peer.host = sender.isLoopback() ? u"127.0.0.1" : sender.toString();
-        peer.port = quint16(obj.value(u"port").toInt());
-        peer.version = obj.value(u"version").toString();
+        peer.name = obj.value(QStringLiteral(u"name")).toString();
+        peer.host = sender.isLoopback() ? QStringLiteral(u"127.0.0.1"): sender.toString();
+        peer.port = quint16(obj.value(QStringLiteral(u"port")).toInt());
+        peer.version = obj.value(QStringLiteral(u"version")).toString();
         emit peerDiscovered(peer);
     }
 }

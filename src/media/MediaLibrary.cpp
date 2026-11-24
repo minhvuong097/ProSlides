@@ -12,9 +12,9 @@ MediaLibrary::MediaLibrary(QObject* parent) : QObject(parent)
 MediaType MediaLibrary::typeForFile(const QString& path)
 {
     const QString suffix = QFileInfo(path).suffix().toLower();
-    static const QStringList images = { u"png", u"jpg", u"jpeg", u"webp", u"bmp", u"gif", u"svg", u"tif", u"tiff" };
-    static const QStringList videos = { u"mp4", u"mov", u"mkv", u"avi", u"webm", u"m4v", u"wmv", u"mpg", u"mpeg" };
-    static const QStringList audios = { u"mp3", u"wav", u"aac", u"flac", u"ogg", u"m4a", u"wma" };
+    static const QStringList images = { QStringLiteral(u"png"), QStringLiteral(u"jpg"), QStringLiteral(u"jpeg"), QStringLiteral(u"webp"), QStringLiteral(u"bmp"), QStringLiteral(u"gif"), QStringLiteral(u"svg"), QStringLiteral(u"tif"), QStringLiteral(u"tiff")};
+    static const QStringList videos = { QStringLiteral(u"mp4"), QStringLiteral(u"mov"), QStringLiteral(u"mkv"), QStringLiteral(u"avi"), QStringLiteral(u"webm"), QStringLiteral(u"m4v"), QStringLiteral(u"wmv"), QStringLiteral(u"mpg"), QStringLiteral(u"mpeg")};
+    static const QStringList audios = { QStringLiteral(u"mp3"), QStringLiteral(u"wav"), QStringLiteral(u"aac"), QStringLiteral(u"flac"), QStringLiteral(u"ogg"), QStringLiteral(u"m4a"), QStringLiteral(u"wma")};
     if (images.contains(suffix)) return MediaType::Image;
     if (videos.contains(suffix)) return MediaType::Video;
     if (audios.contains(suffix)) return MediaType::Audio;

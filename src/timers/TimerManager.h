@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.h"
+#include "core/Types.h"
 
 #include <QObject>
 #include <QVariantList>
@@ -19,7 +19,7 @@ struct Timer {
     qint64 accumulatedMs = 0;   // time spent running before pause
     bool running = false;
     int warnSeconds = 0;
-    QString warnColor = u"#ff6b6b";
+    QString warnColor = QStringLiteral(u"#ff6b6b");
 };
 
 // Service timers: countdown, clock and stopwatch. Ticks at 250 ms and exposes

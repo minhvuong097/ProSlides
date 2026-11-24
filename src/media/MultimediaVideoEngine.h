@@ -24,7 +24,7 @@ public:
 
     QVideoSink* videoSink() const override { return m_sink; }
     bool hardwareAccelerated() const override { return false; }
-    QString backendName() const override { return u"Qt Multimedia"; }
+    QString backendName() const override { return QStringLiteral(u"Qt Multimedia"); }
 
     qint64 position() const override { return m_player.position(); }
     qint64 duration() const override { return m_player.duration(); }

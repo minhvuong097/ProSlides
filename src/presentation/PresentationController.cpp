@@ -8,6 +8,7 @@
 #include <QDateTime>
 #include <QHostInfo>
 #include <QNetworkInterface>
+#include <QAbstractSocket>
 #include <QMetaObject>
 #include <cmath>
 
@@ -15,20 +16,23 @@ namespace ps::presentation {
 
 PresentationController::PresentationController(QObject* parent)
     : QObject(parent)
+    , m_repository(m_database)
+    , m_sync(m_crdt)
+    , m_scripture(&m_database)
 {
-    const QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + u"/ProSlides";
+    const QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + QStringLiteral(u"/ProSlides");
     QDir().mkpath(base);
-    QDir().mkpath(QDir(base).filePath(u"Shows"));
-    QDir().mkpath(QDir(base).filePath(u"Media"));
-    QDir().mkpath(QDir(base).filePath(u"Bibles"));
+    QDir().mkpath(QDir(base).filePath(QStringLiteral(u"Shows")));
+    QDir().mkpath(QDir(base).filePath(QStringLiteral(u"Media")));
+    QDir().mkpath(QDir(base).filePath(QStringLiteral(u"Bibles")));
 
     QString dbError;
     if (!m_database.open(&dbError)) emit errorOccurred(dbError);
     m_repository.setDataDirectory(base);
 
     connect(&m_document, &ShowDocument::changed, this, &PresentationController::onDocumentChanged);
-    connect(&m_output, &OutputManager::stateChanged, this, &PresentationController::stateChanged);
-    connect(&m_output, &OutputManager::slidesChanged, this, &PresentationController::slidesChanged);
+    connect(&m_output, &output::OutputManager::stateChanged, this, &PresentationController::stateChanged);
+    connect(&m_output, &output::OutputManager::slidesChanged, this, &PresentationController::slidesChanged);
     connect(&m_remote, &remote::RemoteServer::apiRequested,
             this, &PresentationController::onApiRequested);
     connect(&m_remote, &remote::RemoteServer::errorOccurred,
@@ -47,10 +51,10 @@ PresentationController::PresentationController(QObject* parent)
     connect(&m_scripture, &scripture::ScriptureProvider::biblesChanged,
             this, &PresentationController::biblesChanged);
 
-    m_scripture.setDirectory(QDir(base).filePath(u"Bibles"));
+    m_scripture.setDirectory(QDir(base).filePath(QStringLiteral(u"Bibles")));
     m_scripture.load();
 
-    m_templates.setFilePath(QDir(base).filePath(u"templates.json"));
+    m_templates.setFilePath(QDir(base).filePath(QStringLiteral(u"templates.json")));
     m_templates.load();
     connect(&m_timers, &timers::TimerManager::timersChanged,
             this, &PresentationController::timersChanged);
@@ -64,7 +68,7 @@ PresentationController::PresentationController(QObject* parent)
     connect(&m_overlays, &overlays::OverlayManager::overlaysChanged,
             this, &PresentationController::overlaysChanged);
 
-    m_triggers.setFilePath(QDir(base).filePath(u"triggers.json"));
+    m_triggers.setFilePath(QDir(base).filePath(QStringLiteral(u"triggers.json")));
     m_triggers.load();
     connect(&m_triggers, &triggers::TriggerManager::triggersChanged,
             this, &PresentationController::triggersChanged);
@@ -95,7 +99,7 @@ PresentationController::PresentationController(QObject* parent)
     connect(&m_planningCenter, &providers::PlanningCenterProvider::errorOccurred,
             this, &PresentationController::errorOccurred);
     connect(&m_planningCenter, &providers::PlanningCenterProvider::planImported,
-            this, [this](const QString&) { emit toast(u"Planning Center plan imported"); });
+            this, [this](const QString&) { emit toast(QStringLiteral(u"Planning Center plan imported")); });
 
     connect(&m_cloud, &cloud::CloudSyncClient::connectedChanged,
             this, &PresentationController::cloudChanged);
@@ -105,7 +109,7 @@ PresentationController::PresentationController(QObject* parent)
     m_sync.setTransport(&m_remote);
     connect(&m_discovery, &remote::RemoteDiscovery::peerDiscovered,
             this, [this](const remote::RemotePeer& peer) {
-                emit toast(u"Found remote: " + peer.name + u" (" + peer.host + u")");
+                emit toast(QStringLiteral(u"Found remote: ")+ peer.name + QStringLiteral(u" (")+ peer.host + QStringLiteral(u")"));
             });
 
     m_clock.setInterval(1000);
@@ -113,7 +117,7 @@ PresentationController::PresentationController(QObject* parent)
     m_clock.start();
     updateClock();
 
-    newShow(u"Untitled Service");
+    newShow(QStringLiteral(u"Untitled Service"));
 }
 
 // ---------------------------------------------------------------------------
@@ -134,7 +138,7 @@ QStringList PresentationController::bibleNames() const { return m_scripture.bibl
 
 void PresentationController::updateClock()
 {
-    m_clockText = QDateTime::currentDateTime().toString(u"hh:mm");
+    m_clockText = QDateTime::currentDateTime().toString(QStringLiteral(u"hh:mm"));
     emit tick();
 }
 
@@ -145,12 +149,12 @@ void PresentationController::newShow(const QString& name)
 {
     Show show;
     show.id = makeId();
-    show.name = name.isEmpty() ? u"Untitled Service" : name;
+    show.name = name.isEmpty() ? QStringLiteral(u"Untitled Service"): name;
     show.timestamps.created = nowMillis();
     const Id layoutId = makeId();
     Layout layout;
     layout.id = layoutId;
-    layout.name = u"Main";
+    layout.name = QStringLiteral(u"Main");
     show.layouts.insert(layoutId, layout);
     show.settings.activeLayout = layoutId;
 
@@ -164,14 +168,14 @@ bool PresentationController::openShow(const QString& id)
 {
     auto show = m_repository.loadShow(id);
     if (!show) {
-        emit errorOccurred(u"Cannot open show: " + id);
+        emit errorOccurred(QStringLiteral(u"Cannot open show: ")+ id);
         return false;
     }
     m_document.setShow(std::move(*show));
     rebuildSlides();
     loadTimelineForShow();
     emit showChanged();
-    emit toast(u"Opened " + m_document.name());
+    emit toast(QStringLiteral(u"Opened ")+ m_document.name());
     return true;
 }
 
@@ -186,7 +190,7 @@ bool PresentationController::saveShow()
     syncShowToCrdt();
     m_remote.publishShows(showsForRemote());
     emit showChanged();
-    emit toast(u"Saved " + m_document.name());
+    emit toast(QStringLiteral(u"Saved ")+ m_document.name());
     return true;
 }
 
@@ -197,7 +201,7 @@ bool PresentationController::importShowFile(const QString& path)
         emit errorOccurred(file.errorString());
         return false;
     }
-    auto result = decodeShowFileRepair(file.readAll());
+    auto result = ps::decodeShowFileRepair(file.readAll());
     file.close();
     if (!result.ok) {
         emit errorOccurred(result.error);
@@ -219,8 +223,8 @@ void PresentationController::onDocumentChanged()
 void PresentationController::loadTimelineForShow()
 {
     const Show& show = m_document.show();
-    const auto it = show.layouts.constFind(show.settings.activeLayout);
-    if (it != show.layouts.constEnd() && it->second.timeline)
+    const auto it = show.layouts.find(show.settings.activeLayout);
+    if (it != show.layouts.end() && it->second.timeline)
         m_timeline.setTimelineJson(*it->second.timeline);
     else
         m_timeline.clear();
@@ -229,14 +233,14 @@ void PresentationController::loadTimelineForShow()
 void PresentationController::syncShowToCrdt()
 {
     const Show& show = m_document.show();
-    m_crdt.set({ u"shows", show.id, u"name" }, show.name);
+    m_crdt.set({ QStringLiteral(u"shows"), show.id, QStringLiteral(u"name")}, show.name);
     for (const auto& [id, slide] : show.slides) {
         QJsonObject payload;
-        payload.insert(u"id", id);
-        payload.insert(u"group", slide.group.value_or(QString{}));
-        payload.insert(u"text", slide.plainText());
-        payload.insert(u"notes", slide.notes);
-        m_crdt.set({ u"shows", show.id, u"slides", id }, payload);
+        payload.insert(QStringLiteral(u"id"), id);
+        payload.insert(QStringLiteral(u"group"), slide.group.value_or(QString{}));
+        payload.insert(QStringLiteral(u"text"), slide.plainText());
+        payload.insert(QStringLiteral(u"notes"), slide.notes);
+        m_crdt.set({ QStringLiteral(u"shows"), show.id, QStringLiteral(u"slides"), id }, payload);
     }
 }
 
@@ -246,15 +250,15 @@ void PresentationController::syncShowToCrdt()
 QVariantMap PresentationController::slideToMap(const Id& id, int index) const
 {
     QVariantMap m;
-    const auto it = m_document.show().slides.constFind(id);
-    m.insert(u"id", id);
-    m.insert(u"index", index);
-    if (it != m_document.show().slides.constEnd()) {
-        m.insert(u"group", it->group.value_or(QString{}));
-        m.insert(u"title", it->plainText().section(u'\n', 0, 0));
-        m.insert(u"text", it->plainText());
-        m.insert(u"notes", it->notes);
-        m.insert(u"key", it->key.value_or(QString{}));
+    const auto it = m_document.show().slides.find(id);
+    m.insert(QStringLiteral(u"id"), id);
+    m.insert(QStringLiteral(u"index"), index);
+    if (it != m_document.show().slides.end()) {
+        m.insert(QStringLiteral(u"group"), it->group.value_or(QString{}));
+        m.insert(QStringLiteral(u"title"), it->plainText().section(u'\n', 0, 0));
+        m.insert(QStringLiteral(u"text"), it->plainText());
+        m.insert(QStringLiteral(u"notes"), it->notes);
+        m.insert(QStringLiteral(u"key"), it->key.value_or(QString{}));
     }
     return m;
 }
@@ -264,15 +268,15 @@ void PresentationController::rebuildSlides()
     m_slides.clear();
     m_slideOrder.clear();
     const Show& show = m_document.show();
-    const auto lit = show.layouts.constFind(show.settings.activeLayout);
-    if (lit == show.layouts.constEnd()) {
+    const auto lit = show.layouts.find(show.settings.activeLayout);
+    if (lit == show.layouts.end()) {
         emit slidesChanged();
         return;
     }
     int index = 0;
     for (const auto& ref : lit->second.slides) {
         if (ref.disabled || ref.remove) continue;
-        if (!show.slides.contains(ref.id)) continue;
+        if (show.slides.find(ref.id) == show.slides.end()) continue;
         m_slideOrder.append(ref.id);
         m_slides.append(slideToMap(ref.id, index++));
     }
@@ -283,8 +287,8 @@ void PresentationController::pushOutput()
 {
     QVector<QJsonObject> slides;
     for (const auto& id : m_slideOrder) {
-        const auto it = m_document.show().slides.constFind(id);
-        if (it == m_document.show().slides.constEnd()) continue;
+        const auto it = m_document.show().slides.find(id);
+        if (it == m_document.show().slides.end()) continue;
         slides.append(it->toJson());
     }
     m_output.setSlides(slides);
@@ -294,7 +298,7 @@ QString PresentationController::addLyricSlide(const QString& group, const QStrin
                                               const QString& key)
 {
     const Id id = m_document.addLyricSlide(group, text, key);
-    if (id.isEmpty()) emit errorOccurred(u"Could not create slide");
+    if (id.isEmpty()) emit errorOccurred(QStringLiteral(u"Could not create slide"));
     pushOutput();
     return id;
 }
@@ -302,7 +306,7 @@ QString PresentationController::addLyricSlide(const QString& group, const QStrin
 QString PresentationController::addMediaSlide(const QString& group, const QString& path)
 {
     const Id id = m_document.addMediaSlide(group, path);
-    if (id.isEmpty()) emit errorOccurred(u"Could not create media slide");
+    if (id.isEmpty()) emit errorOccurred(QStringLiteral(u"Could not create media slide"));
     pushOutput();
     return id;
 }
@@ -345,15 +349,15 @@ void PresentationController::startPresenting()
 {
     pushOutput();
     if (m_output.displayCount() == 0 && m_output.slideCount() > 0) openDisplay(0);
-    m_remote.publishOutput(QJsonObject{{u"index", m_output.currentIndex()}});
-    emit toast(u"Presenting");
+    m_remote.publishOutput(QJsonObject{{QStringLiteral(u"index"), m_output.currentIndex()}});
+    emit toast(QStringLiteral(u"Presenting"));
 }
 
 void PresentationController::stopPresenting()
 {
     closeDisplays();
     m_output.clearAll();
-    emit toast(u"Presentation stopped");
+    emit toast(QStringLiteral(u"Presentation stopped"));
 }
 
 // ---------------------------------------------------------------------------
@@ -365,13 +369,13 @@ void PresentationController::search(const QString& query)
     const auto hits = m_repository.search(query, 60);
     for (const auto& hit : hits) {
         QVariantMap m;
-        m.insert(u"showId", hit.showId);
-        m.insert(u"slideId", hit.slideId);
-        m.insert(u"showName", hit.showName);
-        m.insert(u"group", hit.group);
-        m.insert(u"title", hit.title);
-        m.insert(u"snippet", hit.snippet);
-        m.insert(u"rank", hit.rank);
+        m.insert(QStringLiteral(u"showId"), hit.showId);
+        m.insert(QStringLiteral(u"slideId"), hit.slideId);
+        m.insert(QStringLiteral(u"showName"), hit.showName);
+        m.insert(QStringLiteral(u"group"), hit.group);
+        m.insert(QStringLiteral(u"title"), hit.title);
+        m.insert(QStringLiteral(u"snippet"), hit.snippet);
+        m.insert(QStringLiteral(u"rank"), hit.rank);
         m_searchResults.append(m);
     }
     emit searchResultsChanged();
@@ -381,8 +385,8 @@ bool PresentationController::openSearchResult(int row)
 {
     if (row < 0 || row >= m_searchResults.size()) return false;
     const auto m = m_searchResults.at(row).toMap();
-    if (!openShow(m.value(u"showId").toString())) return false;
-    const QString slideId = m.value(u"slideId").toString();
+    if (!openShow(m.value(QStringLiteral(u"showId")).toString())) return false;
+    const QString slideId = m.value(QStringLiteral(u"slideId")).toString();
     const int index = m_slideOrder.indexOf(slideId);
     if (index >= 0) goToSlide(index);
     return true;
@@ -394,16 +398,16 @@ bool PresentationController::openSearchResult(int row)
 bool PresentationController::startRemote(const QString& password, quint16 port)
 {
     if (!m_remote.start(port, password)) return false;
-    m_discovery.start(port, u"ProSlides-" + QHostInfo::localHostName());
+    m_discovery.start(port, QStringLiteral(u"ProSlides-")+ QHostInfo::localHostName());
 
-    QString ip = u"127.0.0.1";
+    QString ip = QStringLiteral(u"127.0.0.1");
     for (const auto& address : QNetworkInterface::allAddresses()) {
-        if (address.isIPv4() && !address.isLoopback()) { ip = address.toString(); break; }
+        if (address.protocol() == QAbstractSocket::IPv4Protocol && !address.isLoopback()) { ip = address.toString(); break; }
     }
-    m_remoteAddress = u"http://" + ip + u":" + QString::number(port) + u"/remote";
+    m_remoteAddress = QStringLiteral(u"http://")+ ip + QStringLiteral(u":")+ QString::number(port) + QStringLiteral(u"/remote");
     m_remote.publishShows(showsForRemote());
     emit remoteChanged();
-    emit toast(u"Remote ready: " + m_remoteAddress);
+    emit toast(QStringLiteral(u"Remote ready: ")+ m_remoteAddress);
     return true;
 }
 
@@ -424,7 +428,7 @@ void PresentationController::attachEngine(QQmlEngine* engine)
 bool PresentationController::openDisplay(int screenIndex)
 {
     if (!m_engine) {
-        emit errorOccurred(u"QML engine not attached");
+        emit errorOccurred(QStringLiteral(u"QML engine not attached"));
         return false;
     }
     return m_output.addDisplay(screenIndex);
@@ -442,13 +446,13 @@ void PresentationController::scanMedia(const QString& directory)
     m_mediaFiles.clear();
     for (const auto& file : m_mediaLibrary.files()) {
         QVariantMap item;
-        item.insert(u"name", file.name);
-        item.insert(u"path", file.path);
-        item.insert(u"kind", mediaTypeToString(file.type));
+        item.insert(QStringLiteral(u"name"), file.name);
+        item.insert(QStringLiteral(u"path"), file.path);
+        item.insert(QStringLiteral(u"kind"), mediaTypeToString(file.type));
         m_mediaFiles.append(item);
     }
     emit mediaFilesChanged();
-    emit toast(u"Media scanned: " + QString::number(m_mediaLibrary.files().size()) + u" files");
+    emit toast(QStringLiteral(u"Media scanned: ")+ QString::number(m_mediaLibrary.files().size()) + QStringLiteral(u" files"));
 }
 
 QJsonArray PresentationController::showsForRemote() const
@@ -456,10 +460,10 @@ QJsonArray PresentationController::showsForRemote() const
     QJsonArray out;
     for (const auto& summary : m_repository.listShows()) {
         QJsonObject o;
-        o.insert(u"id", summary.id);
-        o.insert(u"name", summary.name);
-        o.insert(u"category", summary.category);
-        o.insert(u"slides", summary.slideCount);
+        o.insert(QStringLiteral(u"id"), summary.id);
+        o.insert(QStringLiteral(u"name"), summary.name);
+        o.insert(QStringLiteral(u"category"), summary.category);
+        o.insert(QStringLiteral(u"slides"), summary.slideCount);
         out.append(o);
     }
     return out;
@@ -468,29 +472,29 @@ QJsonArray PresentationController::showsForRemote() const
 QVariantMap PresentationController::servicePlan() const
 {
     QVariantMap out;
-    out.insert(u"name", u"Service Flow");
-    out.insert(u"index", m_serviceIndex);
+    out.insert(QStringLiteral(u"name"), QStringLiteral(u"Service Flow"));
+    out.insert(QStringLiteral(u"index"), m_serviceIndex);
     if (m_activeProjectId.isEmpty()) return out;
     auto project = m_repository.loadProject(m_activeProjectId);
     if (!project) return out;
-    out.insert(u"name", project->name);
+    out.insert(QStringLiteral(u"name"), project->name);
     QVariantList items;
     for (const auto& ref : project->shows) {
         QVariantMap item;
-        item.insert(u"id", ref.id);
-        item.insert(u"name", ref.name.value_or(ref.id));
-        item.insert(u"played", ref.played);
-        item.insert(u"color", ref.color.value_or(QString{}));
+        item.insert(QStringLiteral(u"id"), ref.id);
+        item.insert(QStringLiteral(u"name"), ref.name.value_or(ref.id));
+        item.insert(QStringLiteral(u"played"), ref.played);
+        item.insert(QStringLiteral(u"color"), ref.color.value_or(QString{}));
         items.append(item);
     }
-    out.insert(u"items", items);
+    out.insert(QStringLiteral(u"items"), items);
     return out;
 }
 
 bool PresentationController::openProject(const QString& id)
 {
     if (!m_repository.loadProject(id)) {
-        emit errorOccurred(u"Project not found");
+        emit errorOccurred(QStringLiteral(u"Project not found"));
         return false;
     }
     m_activeProjectId = id;
@@ -502,7 +506,7 @@ bool PresentationController::openProject(const QString& id)
 void PresentationController::nextServiceItem()
 {
     auto project = m_repository.loadProject(m_activeProjectId);
-    if (!project || project->shows.isEmpty()) return;
+    if (!project || project->shows.empty()) return;
     m_serviceIndex = qMin(m_serviceIndex + 1, int(project->shows.size()) - 1);
     openShow(project->shows.at(m_serviceIndex).id);
     goToSlide(0);
@@ -530,20 +534,20 @@ bool PresentationController::removeTimelineAction(const QString& id)
 
 void PresentationController::onTimelineAction(const TimelineAction& action)
 {
-    if (action.type == u"slide") {
-        const QString slideId = action.data.value(u"id").toString();
+    if (action.type == QStringLiteral(u"slide")) {
+        const QString slideId = action.data.value(QStringLiteral(u"id")).toString();
         const int index = m_slideOrder.indexOf(slideId);
         if (index >= 0) goToSlide(index);
-        else if (action.data.contains(u"index")) goToSlide(action.data.value(u"index").toInt() - 1);
-    } else if (action.type == u"show") {
-        const QString id = action.data.value(u"id").toString();
+        else if (action.data.contains(QStringLiteral(u"index"))) goToSlide(action.data.value(QStringLiteral(u"index")).toInt() - 1);
+    } else if (action.type == QStringLiteral(u"show")) {
+        const QString id = action.data.value(QStringLiteral(u"id")).toString();
         if (!id.isEmpty()) openShow(id);
-    } else if (action.type == u"action") {
-        const auto triggers = action.data.value(u"triggers").toArray();
+    } else if (action.type == QStringLiteral(u"action")) {
+        const auto triggers = action.data.value(QStringLiteral(u"triggers")).toArray();
         for (const auto& t : triggers) {
             const QString api = t.toString();
             if (api.isEmpty()) continue;
-            onApiRequested(api, action.data.value(u"actionValues").toObject(), {}, false);
+            onApiRequested(api, action.data.value(QStringLiteral(u"actionValues")).toObject(), {}, false);
         }
     }
 }
@@ -576,7 +580,7 @@ void PresentationController::stopAllTimers() { m_timers.stopAll(); }
 bool PresentationController::applyTemplate(const QString& slideId, const QString& templateId)
 {
     const bool ok = m_templates.applyToSlide(m_document, slideId, templateId);
-    if (ok) emit toast(u"Template applied");
+    if (ok) emit toast(QStringLiteral(u"Template applied"));
     return ok;
 }
 
@@ -596,7 +600,7 @@ void PresentationController::clearOverlays()
 bool PresentationController::startScene(const QString& id)
 {
     const bool ok = m_overlays.startScene(id);
-    if (ok) emit toast(u"Scene started");
+    if (ok) emit toast(QStringLiteral(u"Scene started"));
     return ok;
 }
 
@@ -612,7 +616,7 @@ bool PresentationController::transposeShow(int semitones)
     chords::transposeShow(updated, semitones);
     if (!m_document.replaceShow(std::move(updated))) return false;
     pushOutput();
-    emit toast(u"Transposed " + QString::number(semitones) + u" semitones");
+    emit toast(QStringLiteral(u"Transposed ")+ QString::number(semitones) + QStringLiteral(u" semitones"));
     return true;
 }
 
@@ -644,19 +648,19 @@ void PresentationController::fireTriggerKey(const QString& key) { m_triggers.tri
 bool PresentationController::startRecording(const QString& path)
 {
     const bool ok = m_output.startRecording(path);
-    if (ok) emit toast(u"Recording started");
+    if (ok) emit toast(QStringLiteral(u"Recording started"));
     return ok;
 }
 void PresentationController::stopRecording()
 {
     m_output.stopRecording();
-    emit toast(u"Recording saved");
+    emit toast(QStringLiteral(u"Recording saved"));
 }
 
 QString PresentationController::backupNow(const QString& label)
 {
     const QString id = m_backup.backupNow(label);
-    if (!id.isEmpty()) emit toast(u"Backup created: " + id);
+    if (!id.isEmpty()) emit toast(QStringLiteral(u"Backup created: ")+ id);
     return id;
 }
 bool PresentationController::restoreBackup(const QString& id)
@@ -665,7 +669,7 @@ bool PresentationController::restoreBackup(const QString& id)
     if (ok) {
         QString error;
         m_repository.reindexFromDisk(&error);
-        emit toast(u"Backup restored");
+        emit toast(QStringLiteral(u"Backup restored"));
     }
     return ok;
 }
@@ -706,16 +710,16 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
 
     if (api == remote::Api::NextSlide) { nextSlide(); result = m_output.currentIndex(); }
     else if (api == remote::Api::PreviousSlide) { previousSlide(); result = m_output.currentIndex(); }
-    else if (api == remote::Api::IndexSelectSlide) { goToSlide(data.value(u"index").toInt()); result = m_output.currentIndex(); }
+    else if (api == remote::Api::IndexSelectSlide) { goToSlide(data.value(QStringLiteral(u"index")).toInt()); result = m_output.currentIndex(); }
     else if (api == remote::Api::ClearAll) { clearOutput(); result = true; }
     else if (api == remote::Api::RestoreOutput) { restoreOutput(); result = true; }
     else if (api == remote::Api::ClearSlide) { m_output.clearSlide(); result = true; }
     else if (api == remote::Api::ClearBackground) { m_output.setBackground({}); result = true; }
     else if (api == remote::Api::GetOutput) {
         QJsonObject o;
-        o.insert(u"index", m_output.currentIndex());
-        o.insert(u"slide", m_output.currentSlide());
-        o.insert(u"cleared", m_output.cleared());
+        o.insert(QStringLiteral(u"index"), m_output.currentIndex());
+        o.insert(QStringLiteral(u"slide"), m_output.currentSlide());
+        o.insert(QStringLiteral(u"cleared"), m_output.cleared());
         result = o;
     }
     else if (api == remote::Api::GetCleared) { result = m_output.cleared(); }
@@ -727,17 +731,17 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
         result = groups;
     }
     else if (api == remote::Api::GetSlide) {
-        const QString id = data.value(u"slideId").toString();
-        const auto it = m_document.show().slides.constFind(id);
-        result = it != m_document.show().slides.constEnd() ? it->toJson() : QJsonValue::Null;
+        const QString id = data.value(QStringLiteral(u"slideId")).toString();
+        const auto it = m_document.show().slides.find(id);
+        result = it != m_document.show().slides.end() ? it->toJson() : QJsonValue::Null;
     }
-    else if (api == remote::Api::StartShow) { openShow(data.value(u"id").toString()); result = true; }
-    else if (api == remote::Api::ChangeLayout) { setLayoutFromRemote(data.value(u"layoutId").toString()); result = true; }
+    else if (api == remote::Api::StartShow) { openShow(data.value(QStringLiteral(u"id")).toString()); result = true; }
+    else if (api == remote::Api::ChangeLayout) { setLayoutFromRemote(data.value(QStringLiteral(u"layoutId")).toString()); result = true; }
     else if (api == "get_show_layout") {
         QJsonArray arr;
         for (const auto& [id, layout] : m_document.show().layouts) {
             QJsonObject o = layout.toJson();
-            o.insert(u"id", id);
+            o.insert(QStringLiteral(u"id"), id);
             arr.append(o);
         }
         result = arr;
@@ -751,46 +755,46 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
     else if (api == "pause_timeline") { pauseTimeline(); result = true; }
     else if (api == "stop_timeline") { stopTimeline(); result = true; }
     else if (api == "set_timeline_time") {
-        seekTimeline(qint64(data.value(u"seconds").toDouble() * 1000.0));
+        seekTimeline(qint64(data.value(QStringLiteral(u"seconds")).toDouble() * 1000.0));
         result = m_timeline.position();
     }
     else if (api == "get_timeline") {
         QJsonObject o;
-        o.insert(u"position", m_timeline.position());
-        o.insert(u"duration", qint64(m_timeline.duration()));
-        o.insert(u"playing", m_timeline.playing());
-        o.insert(u"actions", QJsonArray::fromVariantList(m_timeline.actions()));
+        o.insert(QStringLiteral(u"position"), m_timeline.position());
+        o.insert(QStringLiteral(u"duration"), qint64(m_timeline.duration()));
+        o.insert(QStringLiteral(u"playing"), m_timeline.playing());
+        o.insert(QStringLiteral(u"actions"), QJsonArray::fromVariantList(m_timeline.actions()));
         result = o;
     }
     else if (api == "search_scripture") {
         QJsonArray arr;
-        const auto verses = m_scripture.search(data.value(u"query").toString());
+        const auto verses = m_scripture.search(data.value(QStringLiteral(u"query")).toString());
         for (const auto& v : verses) arr.append(QJsonValue::fromVariant(v));
         result = arr;
     }
     else if (api == "start_scripture") {
-        result = openScripture(data.value(u"reference").toString());
+        result = openScripture(data.value(QStringLiteral(u"reference")).toString());
     }
     else if (api == "scripture_next") { result = scriptureNext(); }
     else if (api == "scripture_previous") { result = scripturePrevious(); }
     else if (api == "get_scripture") {
         QJsonObject o;
-        o.insert(u"reference", m_scripture.activeReference());
-        o.insert(u"text", m_scripture.activeText());
+        o.insert(QStringLiteral(u"reference"), m_scripture.activeReference());
+        o.insert(QStringLiteral(u"text"), m_scripture.activeText());
         result = o;
     }
     else if (api == "name_start_timer") {
-        const QString name = data.value(u"name").toString();
-        const double seconds = data.value(u"seconds").toDouble(300);
+        const QString name = data.value(QStringLiteral(u"name")).toString();
+        const double seconds = data.value(QStringLiteral(u"seconds")).toDouble(300);
         result = m_timers.startTimer(name, seconds);
     }
     else if (api == "id_pause_timer" || api == "pause_timers") {
-        if (data.contains(u"id")) m_timers.pauseTimer(data.value(u"id").toString());
+        if (data.contains(QStringLiteral(u"id"))) m_timers.pauseTimer(data.value(QStringLiteral(u"id")).toString());
         else m_timers.pauseAll();
         result = true;
     }
     else if (api == "id_stop_timer" || api == "stop_timers") {
-        if (data.contains(u"id")) m_timers.stopTimer(data.value(u"id").toString());
+        if (data.contains(QStringLiteral(u"id"))) m_timers.stopTimer(data.value(QStringLiteral(u"id")).toString());
         else m_timers.stopAll();
         result = true;
     }
@@ -798,57 +802,57 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
         result = QJsonArray::fromVariantList(m_timers.timers());
     }
     else if (api == "id_select_overlay" || api == "toggle_overlay") {
-        m_overlays.toggleOverlay(data.value(u"id").toString());
+        m_overlays.toggleOverlay(data.value(QStringLiteral(u"id")).toString());
         result = true;
     }
     else if (api == "clear_overlays") { m_overlays.clearOverlays(); result = true; }
     else if (api == "get_overlays") { result = QJsonArray::fromVariantList(m_overlays.overlays()); }
-    else if (api == "start_scene") { result = startScene(data.value(u"id").toString()); }
+    else if (api == "start_scene") { result = startScene(data.value(QStringLiteral(u"id")).toString()); }
     else if (api == "clear_scene") { m_overlays.clearScene(); result = true; }
     else if (api == "play_audio") { playAudio(); result = true; }
     else if (api == "pause_audio") { pauseAudio(); result = true; }
     else if (api == "stop_audio") { stopAudio(); result = true; }
-    else if (api == "audio_seekto") { seekAudio(qint64(data.value(u"seconds").toDouble() * 1000.0)); result = m_audio.position(); }
-    else if (api == "change_volume") { setAudioVolume(data.value(u"volume").toDouble()); result = true; }
-    else if (api == "mute") { setAudioMuted(data.value(u"value").toBool(true)); result = true; }
+    else if (api == "audio_seekto") { seekAudio(qint64(data.value(QStringLiteral(u"seconds")).toDouble() * 1000.0)); result = m_audio.position(); }
+    else if (api == "change_volume") { setAudioVolume(data.value(QStringLiteral(u"volume")).toDouble()); result = true; }
+    else if (api == "mute") { setAudioMuted(data.value(QStringLiteral(u"value")).toBool(true)); result = true; }
     else if (api == "get_audio") {
         QJsonObject o;
-        o.insert(u"track", m_audio.currentName());
-        o.insert(u"position", m_audio.position());
-        o.insert(u"duration", m_audio.duration());
-        o.insert(u"playing", m_audio.playing());
-        o.insert(u"volume", m_audio.volume());
-        o.insert(u"muted", m_audio.isMuted());
+        o.insert(QStringLiteral(u"track"), m_audio.currentName());
+        o.insert(QStringLiteral(u"position"), m_audio.position());
+        o.insert(QStringLiteral(u"duration"), m_audio.duration());
+        o.insert(QStringLiteral(u"playing"), m_audio.playing());
+        o.insert(QStringLiteral(u"volume"), m_audio.volume());
+        o.insert(QStringLiteral(u"muted"), m_audio.muted());
         result = o;
     }
     else if (api == "get_playlists") { result = QJsonArray::fromVariantList(m_audio.tracks()); }
     else if (api == "get_triggers") { result = QJsonArray::fromVariantList(m_triggers.triggers()); }
-    else if (api == "connect_midi") { result = connectMidi(data.value(u"device").toInt(0)); }
+    else if (api == "connect_midi") { result = connectMidi(data.value(QStringLiteral(u"device")).toInt(0)); }
     else if (api == "transpose_show_up") { result = transposeShow(1); }
     else if (api == "transpose_show_down") { result = transposeShow(-1); }
     else if (api == "get_key") { result = detectKey(); }
     else if (api == "start_output_recording") {
-        result = startRecording(data.value(u"path").toString());
+        result = startRecording(data.value(QStringLiteral(u"path")).toString());
     }
     else if (api == "stop_output_recording") { stopRecording(); result = true; }
     else if (api == "toggle_output_recording") {
         if (recording()) stopRecording();
-        else startRecording(data.value(u"path").toString());
+        else startRecording(data.value(QStringLiteral(u"path")).toString());
         result = recording();
     }
     else if (api == "get_backups") { result = QJsonArray::fromVariantList(m_backup.backups()); }
-    else if (api == "create_backup") { result = backupNow(data.value(u"label").toString()); }
-    else if (api == "restore_backup") { result = restoreBackup(data.value(u"id").toString()); }
+    else if (api == "create_backup") { result = backupNow(data.value(QStringLiteral(u"label")).toString()); }
+    else if (api == "restore_backup") { result = restoreBackup(data.value(QStringLiteral(u"id")).toString()); }
     else if (api == "get_plans") { result = QJsonArray::fromVariantList(m_planningCenter.plans()); }
-    else if (api == "fetch_plans") { fetchPlans(data.value(u"from").toString(), data.value(u"to").toString()); result = true; }
-    else if (api == "import_plan") { result = importPlan(data.value(u"id").toString()); }
+    else if (api == "fetch_plans") { fetchPlans(data.value(QStringLiteral(u"from")).toString(), data.value(QStringLiteral(u"to")).toString()); result = true; }
+    else if (api == "import_plan") { result = importPlan(data.value(QStringLiteral(u"id")).toString()); }
     else if (api == "cloud_status") {
         QJsonObject o;
-        o.insert(u"connected", cloudConnected());
+        o.insert(QStringLiteral(u"connected"), cloudConnected());
         result = o;
     }
     else {
-        emit toast(u"Unknown API action: " + api);
+        emit toast(QStringLiteral(u"Unknown API action: ")+ api);
     }
 
     if (wantsResponse) m_remote.reply(clientId, api, result);

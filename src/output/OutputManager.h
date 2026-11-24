@@ -83,7 +83,7 @@ private:
     bool m_cleared = false;
     bool m_slideHidden = false;
     QString m_background;
-    QString m_transition = u"fade";
+    QString m_transition = QStringLiteral(u"fade");
     QString m_clockText;
     QTimer m_clock;
     recording::OutputRecorder m_recorder;

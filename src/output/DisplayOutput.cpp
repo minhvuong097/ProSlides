@@ -11,7 +11,7 @@ namespace ps::output {
 DisplayOutput::DisplayOutput(int screenIndex, QQmlEngine* engine, QObject* parent)
     : QObject(parent), m_screenIndex(screenIndex)
 {
-    QQmlComponent component(engine, QUrl(u"qrc:/qml/views/PresenterView.qml"));
+    QQmlComponent component(engine, QUrl(QStringLiteral(u"qrc:/qml/views/PresenterView.qml")));
     if (component.isError()) {
         qWarning("DisplayOutput QML errors: %s", qPrintable(component.errorString()));
         return;
@@ -19,7 +19,7 @@ DisplayOutput::DisplayOutput(int screenIndex, QQmlEngine* engine, QObject* paren
     auto* obj = qobject_cast<QQuickWindow*>(component.create());
     if (!obj) return;
     m_window = obj;
-    m_window->setColor(QColor(u"#000000"));
+    m_window->setColor(QColor(QStringLiteral(u"#000000")));
 }
 
 void DisplayOutput::showFullscreen()

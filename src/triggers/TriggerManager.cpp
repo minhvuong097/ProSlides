@@ -11,31 +11,31 @@ namespace ps::triggers {
 QJsonObject Trigger::toJson() const
 {
     QJsonObject o;
-    if (!id.isEmpty()) o.insert(u"id", id);
-    o.insert(u"action", action);
-    if (!data.isEmpty()) o.insert(u"data", data);
-    o.insert(u"source", source);
-    o.insert(u"channel", channel);
-    o.insert(u"note", note);
-    if (isControl) o.insert(u"control", true);
-    if (minValue != 1) o.insert(u"minValue", minValue);
-    if (!key.isEmpty()) o.insert(u"key", key);
+    if (!id.isEmpty()) o.insert(QStringLiteral(u"id"), id);
+    o.insert(QStringLiteral(u"action"), action);
+    if (!data.isEmpty()) o.insert(QStringLiteral(u"data"), data);
+    o.insert(QStringLiteral(u"source"), source);
+    o.insert(QStringLiteral(u"channel"), channel);
+    o.insert(QStringLiteral(u"note"), note);
+    if (isControl) o.insert(QStringLiteral(u"control"), true);
+    if (minValue != 1) o.insert(QStringLiteral(u"minValue"), minValue);
+    if (!key.isEmpty()) o.insert(QStringLiteral(u"key"), key);
     return o;
 }
 
 Trigger Trigger::fromJson(const QJsonObject& o)
 {
     Trigger t;
-    t.id = o.value(u"id").toString();
-    t.action = o.value(u"action").toString();
-    if (const auto v = o.constFind(u"data"); v != o.constEnd() && v->isObject())
+    t.id = o.value(QStringLiteral(u"id")).toString();
+    t.action = o.value(QStringLiteral(u"action")).toString();
+    if (const auto v = o.constFind(QStringLiteral(u"data")); v != o.constEnd() && v->isObject())
         t.data = v->toObject();
-    t.source = o.value(u"source").toString();
-    t.channel = o.value(u"channel").toInt();
-    t.note = o.value(u"note").toInt(-1);
-    t.isControl = o.value(u"control").toBool(false);
-    t.minValue = o.value(u"minValue").toInt(1);
-    t.key = o.value(u"key").toString();
+    t.source = o.value(QStringLiteral(u"source")).toString();
+    t.channel = o.value(QStringLiteral(u"channel")).toInt();
+    t.note = o.value(QStringLiteral(u"note")).toInt(-1);
+    t.isControl = o.value(QStringLiteral(u"control")).toBool(false);
+    t.minValue = o.value(QStringLiteral(u"minValue")).toInt(1);
+    t.key = o.value(QStringLiteral(u"key")).toString();
     return t;
 }
 
@@ -60,12 +60,12 @@ void TriggerManager::rebuild()
     m_model.clear();
     for (const auto& trigger : m_triggers) {
         QVariantMap m;
-        m.insert(u"id", trigger.id);
-        m.insert(u"action", trigger.action);
-        m.insert(u"source", trigger.source);
-        m.insert(u"note", trigger.note);
-        m.insert(u"key", trigger.key);
-        m.insert(u"enabled", true);
+        m.insert(QStringLiteral(u"id"), trigger.id);
+        m.insert(QStringLiteral(u"action"), trigger.action);
+        m.insert(QStringLiteral(u"source"), trigger.source);
+        m.insert(QStringLiteral(u"note"), trigger.note);
+        m.insert(QStringLiteral(u"key"), trigger.key);
+        m.insert(QStringLiteral(u"enabled"), true);
         m_model.append(m);
     }
     emit triggersChanged();
@@ -77,7 +77,7 @@ void TriggerManager::load()
     QFile file(m_filePath);
     if (file.open(QIODevice::ReadOnly)) {
         const auto doc = QJsonDocument::fromJson(file.readAll());
-        const auto arr = doc.isArray() ? doc.array() : doc.object().value(u"triggers").toArray();
+        const auto arr = doc.isArray() ? doc.array() : doc.object().value(QStringLiteral(u"triggers")).toArray();
         for (const auto& v : arr) {
             if (!v.isObject()) continue;
             auto trigger = Trigger::fromJson(v.toObject());
@@ -107,7 +107,7 @@ QString TriggerManager::addMidiTrigger(const QString& action, int note,
     Trigger t;
     t.id = makeId();
     t.action = action;
-    t.source = u"midi";
+    t.source = QStringLiteral(u"midi");
     t.note = note;
     t.isControl = isControl;
     t.channel = channel;
@@ -122,7 +122,7 @@ QString TriggerManager::addKeyTrigger(const QString& action, const QString& key)
     Trigger t;
     t.id = makeId();
     t.action = action;
-    t.source = u"key";
+    t.source = QStringLiteral(u"key");
     t.key = key;
     m_triggers.append(std::move(t));
     rebuild();
@@ -153,7 +153,7 @@ void TriggerManager::handleMidi(int type, int channel, int data1, int data2)
     if (!noteOn && !control) return;
 
     for (const auto& trigger : m_triggers) {
-        if (trigger.source != u"midi") continue;
+        if (trigger.source != QStringLiteral(u"midi")) continue;
         if (trigger.isControl != control) continue;
         if (trigger.channel >= 0 && trigger.channel != channel) continue;
         if (trigger.note != data1) continue;
@@ -165,7 +165,7 @@ void TriggerManager::handleMidi(int type, int channel, int data1, int data2)
 void TriggerManager::triggerKey(const QString& key)
 {
     for (const auto& trigger : m_triggers) {
-        if (trigger.source == u"key" && trigger.key.compare(key, Qt::CaseInsensitive) == 0)
+        if (trigger.source == QStringLiteral(u"key")&& trigger.key.compare(key, Qt::CaseInsensitive) == 0)
             dispatch(trigger);
     }
 }

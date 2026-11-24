@@ -8,7 +8,9 @@
 
 #include <QString>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QJsonValue>
+#include <QStringList>
 #include <QColor>
 #include <QRectF>
 #include <QSize>
@@ -74,6 +76,8 @@ struct Chord {
     Id     id;
     double pos = 0; // character offset within the text line
     QString key;    // e.g. "C", "G/B"
+
+    QJsonObject toJson() const;
 };
 
 // FreeShow: Line.text[] — styled text fragments
@@ -82,6 +86,8 @@ struct TextPart {
     QString style;                     // inline CSS (color, font-weight, ...)
     std::optional<QString> customType;
     std::optional<QString> sourceDynamicKey;
+
+    QJsonObject toJson() const;
 };
 
 // FreeShow: Line
@@ -90,6 +96,7 @@ struct Line {
     std::vector<TextPart> text;
     std::vector<Chord> chords;
 
+    QJsonObject toJson() const;
     QString plainText() const; // concatenate all fragments
 };
 
@@ -97,12 +104,16 @@ struct Line {
 struct ListItem {
     QString text;
     std::optional<QString> icon;
+
+    QJsonObject toJson() const;
 };
 struct ListData {
     bool enabled = false;
     std::optional<QString> style;
     std::optional<int> interval;
     std::vector<ListItem> items;
+
+    QJsonObject toJson() const;
 };
 
 // FreeShow: Scrolling
@@ -110,6 +121,8 @@ struct Scrolling {
     QString type = "none"; // none|top_bottom|bottom_top|left_right|right_left
     std::optional<double> speed;
     std::optional<double> gap;
+
+    QJsonObject toJson() const;
 };
 
 // ---------------------------------------------------------------------------
@@ -169,6 +182,7 @@ struct Item {
     QJsonObject extra;
 
     QJsonObject toJson() const;
+    QString plainText() const;
     static Item fromJson(const QJsonObject& o);
 };
 
@@ -223,6 +237,8 @@ struct SlideAction {
     std::vector<QString> triggers;
     QJsonObject actionValues;
     QJsonObject customData;
+
+    QJsonObject toJson() const;
 };
 
 struct SlideData {
@@ -375,6 +391,8 @@ struct ProjectShowRef {
     bool loop = false;
     bool played = false;
     QJsonObject data;
+
+    QJsonObject toJson() const;
 };
 
 struct Project {

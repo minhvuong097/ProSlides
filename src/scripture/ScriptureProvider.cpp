@@ -34,14 +34,14 @@ void ScriptureProvider::load()
     m_bibles.clear();
     if (m_directory.isEmpty()) { emit biblesChanged(); return; }
 
-    QDirIterator it(m_directory, { u"*.fsb" }, QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator it(m_directory, { QStringLiteral(u"*.fsb")}, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
         QFile file(it.next());
         if (!file.open(QIODevice::ReadOnly)) continue;
         const auto result = decodeBibleFile(file.readAll());
         file.close();
         if (!result.ok) {
-            emit errorOccurred(it.filePath() + u": " + result.error);
+            emit errorOccurred(it.filePath() + QStringLiteral(u": ")+ result.error);
             continue;
         }
         m_bibles.append(result.bible);
@@ -56,21 +56,21 @@ void ScriptureProvider::indexBible(const Bible& bible)
 {
     if (!m_database || !m_database->isOpen()) return;
     QSqlQuery del(m_database->database());
-    del.prepare(u"DELETE FROM verses_fts WHERE bible_id = :id");
-    del.bindValue(u":id", bible.id);
+    del.prepare(QStringLiteral(u"DELETE FROM verses_fts WHERE bible_id = :id"));
+    del.bindValue(QStringLiteral(u":id"), bible.id);
     del.exec();
 
     QSqlQuery insert(m_database->database());
-    insert.prepare(u"INSERT INTO verses_fts (bible_id, book, chapter, verse, text) "
-                   u"VALUES (:bid, :book, :chapter, :verse, :text)");
-    insert.bindValue(u":bid", bible.id);
+    insert.prepare(QStringLiteral(u"INSERT INTO verses_fts (bible_id, book, chapter, verse, text) "
+                   u"VALUES (:bid, :book, :chapter, :verse, :text)"));
+    insert.bindValue(QStringLiteral(u":bid"), bible.id);
     for (const auto& book : bible.books) {
-        insert.bindValue(u":book", book.name);
+        insert.bindValue(QStringLiteral(u":book"), book.name);
         for (const auto& chapter : book.chapters) {
-            insert.bindValue(u":chapter", chapter.number);
+            insert.bindValue(QStringLiteral(u":chapter"), chapter.number);
             for (const auto& verse : chapter.verses) {
-                insert.bindValue(u":verse", verse.number);
-                insert.bindValue(u":text", verse.text);
+                insert.bindValue(QStringLiteral(u":verse"), verse.number);
+                insert.bindValue(QStringLiteral(u":text"), verse.text);
                 insert.exec();
             }
         }
@@ -84,10 +84,10 @@ QVariantList ScriptureProvider::books() const
     if (!bible) return out;
     for (const auto& book : bible->books) {
         QVariantMap m;
-        m.insert(u"number", book.number);
-        m.insert(u"name", book.customName.isEmpty() ? book.name : book.customName);
-        m.insert(u"abbreviation", book.abbreviation);
-        m.insert(u"chapters", book.chapters.size());
+        m.insert(QStringLiteral(u"number"), book.number);
+        m.insert(QStringLiteral(u"name"), book.customName.isEmpty() ? book.name : book.customName);
+        m.insert(QStringLiteral(u"abbreviation"), book.abbreviation);
+        m.insert(QStringLiteral(u"chapters"), book.chapters.size());
         out.append(m);
     }
     return out;
@@ -104,16 +104,16 @@ QVariantList ScriptureProvider::search(const QString& query, int limit) const
     if (ref.valid) {
         // A parsed reference jumps straight to the passage.
         QVariantMap m;
-        m.insert(u"reference", referenceToString(ref, *bible));
-        m.insert(u"text", verseText(ref));
-        m.insert(u"book", ref.book);
-        m.insert(u"chapter", ref.chapter);
-        m.insert(u"verse", ref.verse);
+        m.insert(QStringLiteral(u"reference"), referenceToString(ref, *bible));
+        m.insert(QStringLiteral(u"text"), verseText(ref));
+        m.insert(QStringLiteral(u"book"), ref.book);
+        m.insert(QStringLiteral(u"chapter"), ref.chapter);
+        m.insert(QStringLiteral(u"verse"), ref.verse);
         out.append(m);
         return out;
     }
 
-    const auto words = needle.split(QRegularExpression(u"\\s+"), Qt::SkipEmptyParts);
+    const auto words = needle.split(QRegularExpression(QStringLiteral(u"\\s+")), Qt::SkipEmptyParts);
     if (words.isEmpty()) return out;
 
     for (const auto& book : bible->books) {
@@ -131,11 +131,11 @@ QVariantList ScriptureProvider::search(const QString& query, int limit) const
                 hit.chapter = chapter.number;
                 hit.verse = verse.number;
                 QVariantMap m;
-                m.insert(u"reference", referenceToString(hit, *bible));
-                m.insert(u"text", verse.text);
-                m.insert(u"book", book.number);
-                m.insert(u"chapter", chapter.number);
-                m.insert(u"verse", verse.number);
+                m.insert(QStringLiteral(u"reference"), referenceToString(hit, *bible));
+                m.insert(QStringLiteral(u"text"), verse.text);
+                m.insert(QStringLiteral(u"book"), book.number);
+                m.insert(QStringLiteral(u"chapter"), chapter.number);
+                m.insert(QStringLiteral(u"verse"), verse.number);
                 out.append(m);
                 if (out.size() >= limit) return out;
             }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.h"
+#include "core/Types.h"
 
 #include <QObject>
 #include <QVariantList>
@@ -30,7 +30,7 @@ public:
     qint64 position() const { return m_position; }
     qint64 duration() const;
     int actionCount() const { return int(m_actions.size()); }
-    QVariantList actions() const { return m_actions; }
+    QVariantList actions() const;
     bool loop() const { return m_loop; }
 
     Timeline timeline() const;

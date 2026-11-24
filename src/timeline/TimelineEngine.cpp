@@ -12,6 +12,11 @@ TimelineEngine::TimelineEngine(QObject* parent)
     connect(&m_timer, &QTimer::timeout, this, &TimelineEngine::tick);
 }
 
+QVariantList TimelineEngine::actions() const
+{
+    return m_actionsModel;
+}
+
 qint64 TimelineEngine::duration() const
 {
     qint64 end = 0;
@@ -57,12 +62,12 @@ void TimelineEngine::rebuildActions()
     m_actionsModel.clear();
     for (const auto& action : m_actions) {
         QVariantMap m;
-        m.insert(u"id", action.id);
-        m.insert(u"name", action.name);
-        m.insert(u"type", action.type);
-        m.insert(u"time", action.time);
-        m.insert(u"duration", action.duration);
-        m.insert(u"color", action.color.value_or(QString{}));
+        m.insert(QStringLiteral(u"id"), action.id);
+        m.insert(QStringLiteral(u"name"), action.name);
+        m.insert(QStringLiteral(u"type"), action.type);
+        m.insert(QStringLiteral(u"time"), action.time);
+        m.insert(QStringLiteral(u"duration"), action.duration);
+        m.insert(QStringLiteral(u"color"), action.color.value_or(QString{}));
         m_actionsModel.append(m);
     }
 }
@@ -80,7 +85,7 @@ int TimelineEngine::findAction(const QString& id) const
 // ---------------------------------------------------------------------------
 void TimelineEngine::start()
 {
-    if (m_actions.isEmpty()) return;
+    if (m_actions.empty()) return;
     if (m_paused) {
         m_paused = false;
     } else {
@@ -170,8 +175,8 @@ void TimelineEngine::addAction(const QString& name, const QString& type,
 {
     TimelineAction action;
     action.id = makeId();
-    action.name = name.isEmpty() ? u"Action" : name;
-    action.type = type.isEmpty() ? u"action" : type;
+    action.name = name.isEmpty() ? QStringLiteral(u"Action"): name;
+    action.type = type.isEmpty() ? QStringLiteral(u"action"): type;
     action.time = qMax<qint64>(0, timeMs);
     action.duration = qMax(0.0, durationSeconds);
     m_actions.push_back(action);

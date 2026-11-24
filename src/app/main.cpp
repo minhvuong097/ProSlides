@@ -9,31 +9,31 @@
 int main(int argc, char* argv[])
 {
     QGuiApplication app(argc, argv);
-    app.setApplicationName(u"ProSlides");
-    app.setApplicationDisplayName(u"ProSlides");
-    app.setOrganizationName(u"ProSlides");
-    app.setOrganizationDomain(u"proslides.app");
-    app.setApplicationVersion(u"0.9.0");
-    QGuiApplication::setWindowIcon(QIcon(u":/resources/icons/app.svg"));
+    app.setApplicationName(QStringLiteral(u"ProSlides"));
+    app.setApplicationDisplayName(QStringLiteral(u"ProSlides"));
+    app.setOrganizationName(QStringLiteral(u"ProSlides"));
+    app.setOrganizationDomain(QStringLiteral(u"proslides.app"));
+    app.setApplicationVersion(QStringLiteral(u"0.9.0"));
+    QGuiApplication::setWindowIcon(QIcon(QStringLiteral(u":/resources/icons/app.svg")));
 
     QCommandLineParser parser;
-    parser.setApplicationDescription(u"Professional worship presentation software");
+    parser.setApplicationDescription(QStringLiteral(u"Professional worship presentation software"));
     parser.addHelpOption();
     parser.addVersionOption();
-    parser.addPositionalArgument(u"file", u"Optional .show file to open", u"[file]");
+    parser.addPositionalArgument(QStringLiteral(u"file"), QStringLiteral(u"Optional .show file to open"), QStringLiteral(u"[file]"));
     parser.process(app);
 
     ps::presentation::PresentationController controller;
 
     QQmlApplicationEngine engine;
     controller.attachEngine(&engine);
-    engine.rootContext()->setContextProperty(u"ProSlides", &controller);
-    engine.rootContext()->setContextProperty(u"AppVersion", u"0.9.0");
+    engine.rootContext()->setContextProperty(QStringLiteral(u"ProSlides"), &controller);
+    engine.rootContext()->setContextProperty(QStringLiteral(u"AppVersion"), QStringLiteral(u"0.9.0"));
 
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreationFailed,
                      &app, []() { qCritical() << "Failed to load main.qml"; QCoreApplication::exit(-1); },
                      Qt::QueuedConnection);
-    engine.load(QUrl(u"qrc:/qml/main.qml"));
+    engine.load(QUrl(QStringLiteral(u"qrc:/qml/main.qml")));
     if (engine.rootObjects().isEmpty()) return -1;
 
     const auto args = parser.positionalArguments();

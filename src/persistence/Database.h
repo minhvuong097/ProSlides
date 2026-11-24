@@ -9,6 +9,7 @@ namespace ps {
 class Database : public QObject
 {
 public:
+    Database();
     explicit Database(const QString& filePath, QObject* parent = nullptr);
     ~Database() override;
 

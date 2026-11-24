@@ -131,7 +131,7 @@ void OutputManager::removeAllDisplays()
 
 void OutputManager::updateClock()
 {
-    m_clockText = QDateTime::currentDateTime().toString(u"hh:mm:ss");
+    m_clockText = QDateTime::currentDateTime().toString(QStringLiteral(u"hh:mm:ss"));
     emit tick();
 }
 
@@ -170,9 +170,9 @@ void OutputManager::pushToDisplays()
     const QJsonObject slide = currentSlide();
     for (auto* display : m_displays) {
         if (!display || !display->window()) continue;
-        QQmlProperty(display->window(), u"currentSlide").write(slide);
-        QQmlProperty(display->window(), u"cleared").write(m_cleared || m_slideHidden);
-        QQmlProperty(display->window(), u"backgroundPath").write(m_background);
+        QQmlProperty(display->window(), QStringLiteral(u"currentSlide")).write(slide);
+        QQmlProperty(display->window(), QStringLiteral(u"cleared")).write(m_cleared || m_slideHidden);
+        QQmlProperty(display->window(), QStringLiteral(u"backgroundPath")).write(m_background);
     }
 }
 

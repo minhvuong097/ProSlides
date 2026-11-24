@@ -23,7 +23,7 @@ bool RemoteServer::start(quint16 port, QString password, int maxClients)
     m_password = std::move(password);
     m_maxClients = maxClients;
 
-    m_server = new QWebSocketServer(u"ProSlides Remote", QWebSocketServer::NonSecureMode, this);
+    m_server = new QWebSocketServer(QStringLiteral(u"ProSlides Remote"), QWebSocketServer::NonSecureMode, this);
     if (!m_server->listen(QHostAddress::Any, port)) {
         emit errorOccurred(m_server->errorString());
         delete m_server;
@@ -65,7 +65,7 @@ void RemoteServer::onNewConnection()
     if (m_clients.size() >= m_maxClients) {
         Message error;
         error.channel = Channels::Error;
-        error.data = QJsonObject{{u"key", u"overLimit"}, {u"max", m_maxClients}};
+        error.data = QJsonObject{{QStringLiteral(u"key"), QStringLiteral(u"overLimit")}, {QStringLiteral(u"max"), m_maxClients}};
         sendTo(socket, error);
         socket->close();
         return;
@@ -81,14 +81,14 @@ void RemoteServer::onNewConnection()
 
     Message connection;
     connection.channel = Channels::Connection;
-    connection.data = QJsonObject{{u"name", u"ProSlides"}, {u"version", u"0.9.0"}};
+    connection.data = QJsonObject{{QStringLiteral(u"name"), QStringLiteral(u"ProSlides")}, {QStringLiteral(u"version"), QStringLiteral(u"0.9.0")}};
     sendTo(socket, connection);
 
     Message passwordChallenge;
     passwordChallenge.channel = Channels::Password;
     passwordChallenge.data = QJsonObject{
-        {u"password", !m_password.isEmpty()},
-        {u"dictionary", QJsonObject{}}
+        {QStringLiteral(u"password"), !m_password.isEmpty()},
+        {QStringLiteral(u"dictionary"), QJsonObject{}}
     };
     sendTo(socket, passwordChallenge);
 
@@ -111,18 +111,18 @@ void RemoteServer::onTextMessage(const QString& text)
     if (!m_authenticated.value(socket, false)) {
         if (msg.channel == Channels::Access) {
             const QString supplied = msg.data.isObject()
-                ? msg.data.toObject().value(u"password").toString()
+                ? msg.data.toObject().value(QStringLiteral(u"password")).toString()
                 : msg.data.toString();
             if (supplied == m_password) {
                 m_authenticated[socket] = true;
                 sendTo(socket, Message{Channels::Access, true, {}});
                 QJsonObject theme;
-                theme.insert(u"colors", QJsonArray{ u"#0e0e10", u"#1b1b1f", u"#e8e8ea", u"#3ddc84" });
+                theme.insert(QStringLiteral(u"colors"), QJsonArray{ QStringLiteral(u"#0e0e10"), QStringLiteral(u"#1b1b1f"), QStringLiteral(u"#e8e8ea"), QStringLiteral(u"#3ddc84")});
                 sendTo(socket, Message{Channels::ThemeColors, theme, {}});
                 emit clientAuthenticated(clientId);
             } else {
                 sendTo(socket, Message{Channels::Error,
-                                        QJsonObject{{u"key", u"wrongPass"}}, {}});
+                                        QJsonObject{{QStringLiteral(u"key"), QStringLiteral(u"wrongPass")}}, {}});
             }
         }
         return;
@@ -138,7 +138,7 @@ void RemoteServer::onTextMessage(const QString& text)
         // FreeShow variant {"channel":"API","data":{"api":...,"data":...}}.
         QJsonObject payload = msg.data.toObject();
         if (payload.isEmpty() && msg.data.isString())
-            payload.insert(u"api", msg.data.toString());
+            payload.insert(QStringLiteral(u"api"), msg.data.toString());
         const ApiCall call = apiCallFromJson(payload);
         emit apiRequested(call.api, call.data, clientId, call.wantsResponse);
         return;
@@ -148,7 +148,7 @@ void RemoteServer::onTextMessage(const QString& text)
     // PresentationController through publish*().
     if (msg.channel == Channels::Show || msg.channel == Channels::Out ||
         msg.channel == Channels::Shows || msg.channel == Channels::Projects) {
-        emit apiRequested(u"get_" + msg.channel.toLower(), msg.data.toObject(), clientId, true);
+        emit apiRequested(QStringLiteral(u"get_")+ msg.channel.toLower(), msg.data.toObject(), clientId, true);
     }
 }
 
@@ -210,10 +210,10 @@ void RemoteServer::broadcastMessage(const Message& message)
 void RemoteServer::reply(const QString& clientId, const QString& api, const QJsonValue& result)
 {
     QJsonObject o;
-    o.insert(u"channel", Channels::Api);
-    o.insert(u"api", api);
-    o.insert(u"data", result);
-    o.insert(u"send", true);
+    o.insert(QStringLiteral(u"channel"), Channels::Api);
+    o.insert(QStringLiteral(u"api"), api);
+    o.insert(QStringLiteral(u"data"), result);
+    o.insert(QStringLiteral(u"send"), true);
     sendTo(socketFor(clientId), o);
 }
 
@@ -224,8 +224,8 @@ void RemoteServer::publishShows(const QJsonArray& shows)
 void RemoteServer::publishShow(const QJsonObject& show, const QString& id)
 {
     QJsonObject data;
-    data.insert(u"id", id);
-    data.insert(u"show", show);
+    data.insert(QStringLiteral(u"id"), id);
+    data.insert(QStringLiteral(u"show"), show);
     broadcastMessage(Message{Channels::Show, data, {}});
 }
 void RemoteServer::publishProjects(const QJsonArray& projects)

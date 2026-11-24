@@ -51,20 +51,20 @@ bool OutputRecorder::start(const QString& path, const QSize& size, double fps)
 
     if (avformat_alloc_output_context2(&d->format, nullptr, "mp4", qPrintable(path)) < 0 ||
         !d->format) {
-        emit errorOccurred(u"Cannot allocate output context");
+        emit errorOccurred(QStringLiteral(u"Cannot allocate output context"));
         return false;
     }
 
     const AVCodec* encoder = avcodec_find_encoder(AV_CODEC_ID_H264);
     if (!encoder) encoder = avcodec_find_encoder(AV_CODEC_ID_MPEG4);
     if (!encoder) {
-        emit errorOccurred(u"No MP4 encoder available");
+        emit errorOccurred(QStringLiteral(u"No MP4 encoder available"));
         return false;
     }
 
     d->stream = avformat_new_stream(d->format, nullptr);
     if (!d->stream) {
-        emit errorOccurred(u"Cannot create stream");
+        emit errorOccurred(QStringLiteral(u"Cannot create stream"));
         return false;
     }
     d->codec = avcodec_alloc_context3(encoder);
@@ -79,7 +79,7 @@ bool OutputRecorder::start(const QString& path, const QSize& size, double fps)
         d->codec->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
 
     if (avcodec_open2(d->codec, encoder, nullptr) < 0) {
-        emit errorOccurred(u"Cannot open encoder");
+        emit errorOccurred(QStringLiteral(u"Cannot open encoder"));
         return false;
     }
     avcodec_parameters_from_context(d->stream->codecpar, d->codec);
@@ -87,12 +87,12 @@ bool OutputRecorder::start(const QString& path, const QSize& size, double fps)
 
     if (!(d->format->oformat->flags & AVFMT_NOFILE)) {
         if (avio_open(&d->format->pb, qPrintable(path), AVIO_FLAG_WRITE) < 0) {
-            emit errorOccurred(u"Cannot open output file");
+            emit errorOccurred(QStringLiteral(u"Cannot open output file"));
             return false;
         }
     }
     if (avformat_write_header(d->format, nullptr) < 0) {
-        emit errorOccurred(u"Cannot write MP4 header");
+        emit errorOccurred(QStringLiteral(u"Cannot write MP4 header"));
         return false;
     }
     d->headerWritten = true;
@@ -107,7 +107,7 @@ bool OutputRecorder::start(const QString& path, const QSize& size, double fps)
                             d->width, d->height, AV_PIX_FMT_YUV420P,
                             SWS_BILINEAR, nullptr, nullptr, nullptr);
     if (!d->sws) {
-        emit errorOccurred(u"Cannot create scaler");
+        emit errorOccurred(QStringLiteral(u"Cannot create scaler"));
         return false;
     }
 
@@ -184,7 +184,7 @@ class OutputRecorder::Private {};
 
 OutputRecorder::OutputRecorder(QObject* parent) : QObject(parent), d(new Private) {}
 OutputRecorder::~OutputRecorder() { delete d; }
-bool OutputRecorder::start(const QString&, const QSize&, double) { emit errorOccurred(u"FFmpeg support not compiled in"); return false; }
+bool OutputRecorder::start(const QString&, const QSize&, double) { emit errorOccurred(QStringLiteral(u"FFmpeg support not compiled in")); return false; }
 void OutputRecorder::pushFrame(const QImage&) {}
 void OutputRecorder::stop() {}
 bool OutputRecorder::recording() const { return false; }

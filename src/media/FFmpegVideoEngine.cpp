@@ -324,7 +324,7 @@ FFmpegVideoEngine::FFmpegVideoEngine(QObject* parent)
 {
 }
 FFmpegVideoEngine::~FFmpegVideoEngine() = default;
-bool FFmpegVideoEngine::load(const QUrl&) { emit errorOccurred(u"FFmpeg support not compiled in"); return false; }
+bool FFmpegVideoEngine::load(const QUrl&) { emit errorOccurred(QStringLiteral(u"FFmpeg support not compiled in")); return false; }
 void FFmpegVideoEngine::play() {}
 void FFmpegVideoEngine::pause() {}
 void FFmpegVideoEngine::stop() {}

@@ -37,7 +37,7 @@ QString TimerManager::startTimer(const QString& name, double seconds, int warnSe
 {
     Timer timer;
     timer.id = makeId();
-    timer.name = name.isEmpty() ? u"Timer" : name;
+    timer.name = name.isEmpty() ? QStringLiteral(u"Timer"): name;
     timer.kind = TimerKind::Countdown;
     timer.durationMs = qint64(qMax(0.0, seconds) * 1000.0);
     timer.startMs = QDateTime::currentMSecsSinceEpoch();
@@ -136,19 +136,19 @@ void TimerManager::rebuild()
         const int hours = int(absMs / 3600000);
         const int minutes = int((absMs % 3600000) / 60000);
         const int seconds = int((absMs % 60000) / 1000);
-        const QString text = (remaining < 0 ? u"-" : u"") +
-            (hours > 0 ? QString::number(hours) + u":" + QString("%1").arg(minutes, 2, 10, QChar(u'0'))
+        const QString text = (remaining < 0 ? QStringLiteral(u"-"): QStringLiteral(u"")) +
+            (hours > 0 ? QString::number(hours) + QStringLiteral(u":")+ QString("%1").arg(minutes, 2, 10, QChar(u'0'))
                        : QString("%1").arg(minutes, 2, 10, QChar(u'0'))) +
-            u":" + QString("%1").arg(seconds, 2, 10, QChar(u'0'));
+            QStringLiteral(u":")+ QString("%1").arg(seconds, 2, 10, QChar(u'0'));
 
         QVariantMap m;
-        m.insert(u"id", timer.id);
-        m.insert(u"name", timer.name);
-        m.insert(u"running", timer.running);
-        m.insert(u"remaining", remaining);
-        m.insert(u"text", text);
-        m.insert(u"warning", timer.warnSeconds > 0 && remaining <= timer.warnSeconds * 1000);
-        m.insert(u"warnColor", timer.warnColor);
+        m.insert(QStringLiteral(u"id"), timer.id);
+        m.insert(QStringLiteral(u"name"), timer.name);
+        m.insert(QStringLiteral(u"running"), timer.running);
+        m.insert(QStringLiteral(u"remaining"), remaining);
+        m.insert(QStringLiteral(u"text"), text);
+        m.insert(QStringLiteral(u"warning"), timer.warnSeconds > 0 && remaining <= timer.warnSeconds * 1000);
+        m.insert(QStringLiteral(u"warnColor"), timer.warnColor);
         Q_UNUSED(now);
         m_model.append(m);
     }

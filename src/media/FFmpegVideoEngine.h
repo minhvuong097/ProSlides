@@ -29,7 +29,7 @@ public:
 
     QVideoSink* videoSink() const override { return m_sink; }
     bool hardwareAccelerated() const override;
-    QString backendName() const override { return u"FFmpeg (D3D11VA)"; }
+    QString backendName() const override { return QStringLiteral(u"FFmpeg (D3D11VA)"); }
 
     qint64 position() const override;
     qint64 duration() const override;

@@ -1,6 +1,6 @@
-#include "ShowRepository.h"
-#include "Database.h"
-#include "ShowFile.h"
+#include "persistence/ShowRepository.h"
+#include "persistence/Database.h"
+#include "core/ShowFile.h"
 
 #include <QSqlQuery>
 #include <QSqlError>
@@ -49,14 +49,14 @@ ShowRepository::ShowRepository(Database& db) : m_db(db)
 QString ShowRepository::ftsQuery(const QString& userText)
 {
     const QString normalized = normalizeVietnamese(userText);
-    const auto words = normalized.split(QRegularExpression(u"\\s+"), Qt::SkipEmptyParts);
+    const auto words = normalized.split(QRegularExpression(QStringLiteral(u"\\s+")), Qt::SkipEmptyParts);
     QStringList clauses;
     for (const auto& w : words) {
         QString clean;
         for (const QChar c : w) {
             if (c.isLetterOrNumber() || c == u'_') clean += c;
         }
-        if (!clean.isEmpty()) clauses << u'"' + clean + u"\"*";
+        if (!clean.isEmpty()) clauses << u'"' + clean + QStringLiteral(u"\"*");
     }
     return clauses.join(u' ');
 }
@@ -67,7 +67,7 @@ bool ShowRepository::indexShow(const Show& show, const QString& filePath)
     if (!tx.ok()) return false;
 
     QSqlQuery q(m_db.database());
-    q.prepare(u"INSERT INTO shows (id,name,file_path,origin,category,is_private,locked,"
+    q.prepare(QStringLiteral(u"INSERT INTO shows (id,name,file_path,origin,category,is_private,locked,"
               u"created,modified,used,tags,meta_key,json) "
               u"VALUES (:id,:name,:path,:origin,:category,:private,:locked,"
               u":created,:modified,:used,:tags,:metaKey,:json) "
@@ -76,29 +76,29 @@ bool ShowRepository::indexShow(const Show& show, const QString& filePath)
               u"category=excluded.category, is_private=excluded.is_private,"
               u"locked=excluded.locked, created=excluded.created, modified=excluded.modified,"
               u"used=excluded.used, tags=excluded.tags, meta_key=excluded.meta_key,"
-              u"json=excluded.json");
-    q.bindValue(u":id", show.id);
-    q.bindValue(u":name", show.name);
-    q.bindValue(u":path", filePath);
-    bindOrNull(q, u":origin", show.origin);
-    bindOrNull(q, u":category", show.category);
-    q.bindValue(u":private", show.isPrivate ? 1 : 0);
-    q.bindValue(u":locked", show.locked ? 1 : 0);
-    q.bindValue(u":created", show.timestamps.created);
-    if (show.timestamps.modified) q.bindValue(u":modified", *show.timestamps.modified);
-    else q.bindValue(u":modified", QVariant{});
-    if (show.timestamps.used) q.bindValue(u":used", *show.timestamps.used);
-    else q.bindValue(u":used", QVariant{});
-    q.bindValue(u":tags", show.tags.join(u", "));
-    bindOrNull(q, u":metaKey", show.meta.key);
-    q.bindValue(u":json", jsonString(show.toJson()));
+              u"json=excluded.json"));
+    q.bindValue(QStringLiteral(u":id"), show.id);
+    q.bindValue(QStringLiteral(u":name"), show.name);
+    q.bindValue(QStringLiteral(u":path"), filePath);
+    bindOrNull(q, QStringLiteral(u":origin"), show.origin);
+    bindOrNull(q, QStringLiteral(u":category"), show.category);
+    q.bindValue(QStringLiteral(u":private"), show.isPrivate ? 1 : 0);
+    q.bindValue(QStringLiteral(u":locked"), show.locked ? 1 : 0);
+    q.bindValue(QStringLiteral(u":created"), show.timestamps.created);
+    if (show.timestamps.modified) q.bindValue(QStringLiteral(u":modified"), *show.timestamps.modified);
+    else q.bindValue(QStringLiteral(u":modified"), QVariant{});
+    if (show.timestamps.used) q.bindValue(QStringLiteral(u":used"), *show.timestamps.used);
+    else q.bindValue(QStringLiteral(u":used"), QVariant{});
+    q.bindValue(QStringLiteral(u":tags"), show.tags.join(QStringLiteral(u", ")));
+    bindOrNull(q, QStringLiteral(u":metaKey"), show.meta.key);
+    q.bindValue(QStringLiteral(u":json"), jsonString(show.toJson()));
     if (!q.exec()) return false;
 
     // Replace normalized children (cascades clear old rows).
     for (const char* table : { "slides", "layouts", "media" }) {
         QSqlQuery del(m_db.database());
         del.prepare(QString::fromUtf8("DELETE FROM %1 WHERE show_id = :sid").arg(table));
-        del.bindValue(u":sid", show.id);
+        del.bindValue(QStringLiteral(u":sid"), show.id);
         del.exec();
     }
 
@@ -113,25 +113,25 @@ void ShowRepository::indexSlides(const Show& show)
     int pos = 0;
     for (const auto& [id, slide] : show.slides) {
         QSqlQuery q(m_db.database());
-        q.prepare(u"INSERT INTO slides (id,show_id,group_name,title,plain_text,notes,"
+        q.prepare(QStringLiteral(u"INSERT INTO slides (id,show_id,group_name,title,plain_text,notes,"
                   u"musical_key,color,background,position,locked,json) "
                   u"VALUES (:id,:show,:group,:title,:text,:notes,:key,:color,:bg,"
-                  u":pos,:locked,:json)");
-        q.bindValue(u":id", id);
-        q.bindValue(u":show", show.id);
-        bindOrNull(q, u":group", slide.group);
-        q.bindValue(u":title", slide.plainText().section(u'\n', 0, 0));
-        q.bindValue(u":text", slide.plainText());
-        q.bindValue(u":notes", slide.notes);
-        bindOrNull(q, u":key", slide.key);
-        bindOrNull(q, u":color", slide.color);
-        bindOrNull(q, u":bg", slide.settings.backgroundImage);
-        q.bindValue(u":pos", pos++);
-        q.bindValue(u":locked", slide.locked ? 1 : 0);
-        q.bindValue(u":json", jsonString(slide.toJson()));
+                  u":pos,:locked,:json)"));
+        q.bindValue(QStringLiteral(u":id"), id);
+        q.bindValue(QStringLiteral(u":show"), show.id);
+        bindOrNull(q, QStringLiteral(u":group"), slide.group);
+        q.bindValue(QStringLiteral(u":title"), slide.plainText().section(u'\n', 0, 0));
+        q.bindValue(QStringLiteral(u":text"), slide.plainText());
+        q.bindValue(QStringLiteral(u":notes"), slide.notes);
+        bindOrNull(q, QStringLiteral(u":key"), slide.key);
+        bindOrNull(q, QStringLiteral(u":color"), slide.color);
+        bindOrNull(q, QStringLiteral(u":bg"), slide.settings.backgroundImage);
+        q.bindValue(QStringLiteral(u":pos"), pos++);
+        q.bindValue(QStringLiteral(u":locked"), slide.locked ? 1 : 0);
+        q.bindValue(QStringLiteral(u":json"), jsonString(slide.toJson()));
         q.exec();
 
-        if (slide.timeline) indexTimeline(u"slide", id, slide.timeline);
+        if (slide.timeline) indexTimeline(QStringLiteral(u"slide"), id, slide.timeline);
     }
 }
 
@@ -140,35 +140,35 @@ void ShowRepository::indexLayouts(const Show& show)
     int lpos = 0;
     for (const auto& [id, layout] : show.layouts) {
         QSqlQuery q(m_db.database());
-        q.prepare(u"INSERT INTO layouts (id,show_id,name,notes,is_active,position,json) "
-                  u"VALUES (:id,:show,:name,:notes,:active,:pos,:json)");
-        q.bindValue(u":id", id);
-        q.bindValue(u":show", show.id);
-        q.bindValue(u":name", layout.name);
-        q.bindValue(u":notes", layout.notes);
-        q.bindValue(u":active", (id == show.settings.activeLayout) ? 1 : 0);
-        q.bindValue(u":pos", lpos++);
-        q.bindValue(u":json", jsonString(layout.toJson()));
+        q.prepare(QStringLiteral(u"INSERT INTO layouts (id,show_id,name,notes,is_active,position,json) "
+                  u"VALUES (:id,:show,:name,:notes,:active,:pos,:json)"));
+        q.bindValue(QStringLiteral(u":id"), id);
+        q.bindValue(QStringLiteral(u":show"), show.id);
+        q.bindValue(QStringLiteral(u":name"), layout.name);
+        q.bindValue(QStringLiteral(u":notes"), layout.notes);
+        q.bindValue(QStringLiteral(u":active"), (id == show.settings.activeLayout) ? 1 : 0);
+        q.bindValue(QStringLiteral(u":pos"), lpos++);
+        q.bindValue(QStringLiteral(u":json"), jsonString(layout.toJson()));
         q.exec();
 
         int spos = 0;
         for (const auto& ref : layout.slides) {
             QSqlQuery r(m_db.database());
-            r.prepare(u"INSERT OR REPLACE INTO layout_slides "
+            r.prepare(QStringLiteral(u"INSERT OR REPLACE INTO layout_slides "
                       u"(layout_id,slide_id,position,disabled,transition,background,duration_ms) "
-                      u"VALUES (:layout,:slide,:pos,:disabled,:transition,:bg,:duration)");
-            r.bindValue(u":layout", id);
-            r.bindValue(u":slide", ref.id);
-            r.bindValue(u":pos", spos++);
-            r.bindValue(u":disabled", ref.disabled ? 1 : 0);
-            if (ref.transition) r.bindValue(u":transition", transitionTypeToString(ref.transition->type));
-            else r.bindValue(u":transition", QVariant{});
-            bindOrNull(r, u":bg", ref.background);
-            if (ref.timer) r.bindValue(u":duration", *ref.timer);
-            else r.bindValue(u":duration", QVariant{});
+                      u"VALUES (:layout,:slide,:pos,:disabled,:transition,:bg,:duration)"));
+            r.bindValue(QStringLiteral(u":layout"), id);
+            r.bindValue(QStringLiteral(u":slide"), ref.id);
+            r.bindValue(QStringLiteral(u":pos"), spos++);
+            r.bindValue(QStringLiteral(u":disabled"), ref.disabled ? 1 : 0);
+            if (ref.transition) r.bindValue(QStringLiteral(u":transition"), transitionTypeToString(ref.transition->type));
+            else r.bindValue(QStringLiteral(u":transition"), QVariant{});
+            bindOrNull(r, QStringLiteral(u":bg"), ref.background);
+            if (ref.timer) r.bindValue(QStringLiteral(u":duration"), *ref.timer);
+            else r.bindValue(QStringLiteral(u":duration"), QVariant{});
             r.exec();
         }
-        if (layout.timeline) indexTimeline(u"layout", id, layout.timeline);
+        if (layout.timeline) indexTimeline(QStringLiteral(u"layout"), id, layout.timeline);
     }
 }
 
@@ -176,17 +176,17 @@ void ShowRepository::indexMedia(const Show& show)
 {
     for (const auto& [id, m] : show.media) {
         QSqlQuery q(m_db.database());
-        q.prepare(u"INSERT INTO media (id,show_id,name,path,type,video_type,muted,loop,json) "
-                  u"VALUES (:id,:show,:name,:path,:type,:videoType,:muted,:loop,:json)");
-        q.bindValue(u":id", id);
-        q.bindValue(u":show", show.id);
-        q.bindValue(u":name", m.name);
-        q.bindValue(u":path", m.path);
-        q.bindValue(u":type", mediaTypeToString(m.type));
-        bindOrNull(q, u":videoType", m.videoType);
-        q.bindValue(u":muted", m.muted ? 1 : 0);
-        q.bindValue(u":loop", m.loop ? 1 : 0);
-        q.bindValue(u":json", jsonString(m.toJson()));
+        q.prepare(QStringLiteral(u"INSERT INTO media (id,show_id,name,path,type,video_type,muted,loop,json) "
+                  u"VALUES (:id,:show,:name,:path,:type,:videoType,:muted,:loop,:json)"));
+        q.bindValue(QStringLiteral(u":id"), id);
+        q.bindValue(QStringLiteral(u":show"), show.id);
+        q.bindValue(QStringLiteral(u":name"), m.name);
+        q.bindValue(QStringLiteral(u":path"), m.path);
+        q.bindValue(QStringLiteral(u":type"), mediaTypeToString(m.type));
+        bindOrNull(q, QStringLiteral(u":videoType"), m.videoType);
+        q.bindValue(QStringLiteral(u":muted"), m.muted ? 1 : 0);
+        q.bindValue(QStringLiteral(u":loop"), m.loop ? 1 : 0);
+        q.bindValue(QStringLiteral(u":json"), jsonString(m.toJson()));
         q.exec();
     }
 }
@@ -198,18 +198,18 @@ void ShowRepository::indexTimeline(const QString& ownerType, const Id& ownerId,
     const Timeline timeline = Timeline::fromJson(*obj);
     for (const auto& action : timeline.actions) {
         QSqlQuery q(m_db.database());
-        q.prepare(u"INSERT OR REPLACE INTO timeline_actions "
+        q.prepare(QStringLiteral(u"INSERT OR REPLACE INTO timeline_actions "
                   u"(id,owner_type,owner_id,time_ms,duration_s,name,type,color,json) "
-                  u"VALUES (:id,:ownerType,:ownerId,:time,:duration,:name,:type,:color,:json)");
-        q.bindValue(u":id", action.id);
-        q.bindValue(u":ownerType", ownerType);
-        q.bindValue(u":ownerId", ownerId);
-        q.bindValue(u":time", action.time);
-        q.bindValue(u":duration", action.duration);
-        q.bindValue(u":name", action.name);
-        q.bindValue(u":type", action.type);
-        bindOrNull(q, u":color", action.color);
-        q.bindValue(u":json", jsonString(action.toJson()));
+                  u"VALUES (:id,:ownerType,:ownerId,:time,:duration,:name,:type,:color,:json)"));
+        q.bindValue(QStringLiteral(u":id"), action.id);
+        q.bindValue(QStringLiteral(u":ownerType"), ownerType);
+        q.bindValue(QStringLiteral(u":ownerId"), ownerId);
+        q.bindValue(QStringLiteral(u":time"), action.time);
+        q.bindValue(QStringLiteral(u":duration"), action.duration);
+        q.bindValue(QStringLiteral(u":name"), action.name);
+        q.bindValue(QStringLiteral(u":type"), action.type);
+        bindOrNull(q, QStringLiteral(u":color"), action.color);
+        q.bindValue(QStringLiteral(u":json"), jsonString(action.toJson()));
         q.exec();
     }
 }
@@ -224,7 +224,7 @@ bool ShowRepository::saveShow(const Show& show, QString* error)
     }
     const auto bytes = encodeShowFile(show);
     if (file.write(bytes) != bytes.size()) {
-        if (error) *error = u"Failed to write .show file";
+        if (error) *error = QStringLiteral(u"Failed to write .show file");
         return false;
     }
     file.close();
@@ -239,10 +239,10 @@ bool ShowRepository::saveShow(const Show& show, QString* error)
 std::optional<Show> ShowRepository::loadShow(const Id& id, QString* error) const
 {
     QSqlQuery q(m_db.database());
-    q.prepare(u"SELECT json FROM shows WHERE id = :id");
-    q.bindValue(u":id", id);
+    q.prepare(QStringLiteral(u"SELECT json FROM shows WHERE id = :id"));
+    q.bindValue(QStringLiteral(u":id"), id);
     if (!q.exec() || !q.next()) {
-        if (error) *error = u"Show not found: " + id;
+        if (error) *error = QStringLiteral(u"Show not found: ")+ id;
         return std::nullopt;
     }
     const auto obj = QJsonDocument::fromJson(q.value(0).toByteArray()).object();
@@ -254,8 +254,8 @@ std::optional<Show> ShowRepository::loadShow(const Id& id, QString* error) const
 bool ShowRepository::removeShow(const Id& id)
 {
     QSqlQuery q(m_db.database());
-    q.prepare(u"DELETE FROM shows WHERE id = :id");
-    q.bindValue(u":id", id);
+    q.prepare(QStringLiteral(u"DELETE FROM shows WHERE id = :id"));
+    q.bindValue(QStringLiteral(u":id"), id);
     return q.exec();
 }
 
@@ -263,9 +263,9 @@ QVector<ShowSummary> ShowRepository::listShows() const
 {
     QVector<ShowSummary> out;
     QSqlQuery q(m_db.database());
-    q.exec(u"SELECT s.id,s.name,s.category,s.file_path,s.created,s.modified,"
+    q.exec(QStringLiteral(u"SELECT s.id,s.name,s.category,s.file_path,s.created,s.modified,"
            u"(SELECT COUNT(*) FROM slides WHERE show_id=s.id) "
-           u"FROM shows s ORDER BY s.modified DESC, s.name COLLATE NOCASE");
+           u"FROM shows s ORDER BY s.modified DESC, s.name COLLATE NOCASE"));
     while (q.next()) {
         ShowSummary s;
         s.id = q.value(0).toString();
@@ -287,15 +287,15 @@ QVector<SearchHit> ShowRepository::search(const QString& query, int limit) const
     if (fts.isEmpty()) return out;
 
     QSqlQuery q(m_db.database());
-    q.prepare(u"SELECT sl.show_id, sl.id, sh.name, sl.group_name, sl.title, "
+    q.prepare(QStringLiteral(u"SELECT sl.show_id, sl.id, sh.name, sl.group_name, sl.title, "
               u"snippet(slides_fts, 2, '<mark>', '</mark>', '…', 18), "
               u"bm25(slides_fts, 4.0, 2.0, 1.0, 0.5, 0.5) AS rank "
               u"FROM slides_fts "
               u"JOIN slides sl ON sl.rowid = slides_fts.rowid "
               u"JOIN shows sh ON sh.id = sl.show_id "
-              u"WHERE slides_fts MATCH :q ORDER BY rank LIMIT :limit");
-    q.bindValue(u":q", fts);
-    q.bindValue(u":limit", limit);
+              u"WHERE slides_fts MATCH :q ORDER BY rank LIMIT :limit"));
+    q.bindValue(QStringLiteral(u":q"), fts);
+    q.bindValue(QStringLiteral(u":limit"), limit);
     if (!q.exec()) return out;
 
     while (q.next()) {
@@ -317,43 +317,43 @@ bool ShowRepository::saveProject(const Project& project, QString* error)
     DbTransaction tx(m_db);
     if (!tx.ok()) return false;
     QSqlQuery q(m_db.database());
-    q.prepare(u"INSERT INTO projects (id,name,notes,parent,created,modified,used,archived,json) "
+    q.prepare(QStringLiteral(u"INSERT INTO projects (id,name,notes,parent,created,modified,used,archived,json) "
               u"VALUES (:id,:name,:notes,:parent,:created,:modified,:used,:archived,:json) "
               u"ON CONFLICT(id) DO UPDATE SET name=excluded.name, notes=excluded.notes,"
               u"parent=excluded.parent, modified=excluded.modified, used=excluded.used,"
-              u"archived=excluded.archived, json=excluded.json");
-    q.bindValue(u":id", project.id);
-    q.bindValue(u":name", project.name);
-    q.bindValue(u":notes", project.notes);
-    q.bindValue(u":parent", project.parent);
-    q.bindValue(u":created", project.created);
-    if (project.modified) q.bindValue(u":modified", *project.modified);
-    if (project.used) q.bindValue(u":used", *project.used);
-    q.bindValue(u":archived", project.archived ? 1 : 0);
-    q.bindValue(u":json", jsonString(project.toJson()));
+              u"archived=excluded.archived, json=excluded.json"));
+    q.bindValue(QStringLiteral(u":id"), project.id);
+    q.bindValue(QStringLiteral(u":name"), project.name);
+    q.bindValue(QStringLiteral(u":notes"), project.notes);
+    q.bindValue(QStringLiteral(u":parent"), project.parent);
+    q.bindValue(QStringLiteral(u":created"), project.created);
+    if (project.modified) q.bindValue(QStringLiteral(u":modified"), *project.modified);
+    if (project.used) q.bindValue(QStringLiteral(u":used"), *project.used);
+    q.bindValue(QStringLiteral(u":archived"), project.archived ? 1 : 0);
+    q.bindValue(QStringLiteral(u":json"), jsonString(project.toJson()));
     if (!q.exec()) { if (error) *error = m_db.lastError(); return false; }
 
     QSqlQuery del(m_db.database());
-    del.prepare(u"DELETE FROM project_items WHERE project_id = :id");
-    del.bindValue(u":id", project.id);
+    del.prepare(QStringLiteral(u"DELETE FROM project_items WHERE project_id = :id"));
+    del.bindValue(QStringLiteral(u":id"), project.id);
     del.exec();
 
     int pos = 0;
     for (const auto& ref : project.shows) {
         QSqlQuery i(m_db.database());
-        i.prepare(u"INSERT INTO project_items "
+        i.prepare(QStringLiteral(u"INSERT INTO project_items "
                   u"(project_id,position,show_id,layout_id,section,name,item_type,color,notes,played,json) "
-                  u"VALUES (:pid,:pos,:sid,:layout,:section,:name,:type,:color,:notes,:played,:json)");
-        i.bindValue(u":pid", project.id);
-        i.bindValue(u":pos", pos++);
-        i.bindValue(u":sid", ref.id);
-        bindOrNull(i, u":layout", ref.layout);
-        i.bindValue(u":section", ref.type ? showTypeToString(*ref.type) : QVariant{});
-        bindOrNull(i, u":name", ref.name);
-        bindOrNull(i, u":color", ref.color);
-        bindOrNull(i, u":notes", ref.notes);
-        i.bindValue(u":played", ref.played ? 1 : 0);
-        i.bindValue(u":json", jsonString(ref.toJson()));
+                  u"VALUES (:pid,:pos,:sid,:layout,:section,:name,:type,:color,:notes,:played,:json)"));
+        i.bindValue(QStringLiteral(u":pid"), project.id);
+        i.bindValue(QStringLiteral(u":pos"), pos++);
+        i.bindValue(QStringLiteral(u":sid"), ref.id);
+        bindOrNull(i, QStringLiteral(u":layout"), ref.layout);
+        i.bindValue(QStringLiteral(u":section"), ref.type ? showTypeToString(*ref.type) : QVariant{});
+        bindOrNull(i, QStringLiteral(u":name"), ref.name);
+        bindOrNull(i, QStringLiteral(u":color"), ref.color);
+        bindOrNull(i, QStringLiteral(u":notes"), ref.notes);
+        i.bindValue(QStringLiteral(u":played"), ref.played ? 1 : 0);
+        i.bindValue(QStringLiteral(u":json"), jsonString(ref.toJson()));
         i.exec();
     }
     return true;
@@ -362,8 +362,8 @@ bool ShowRepository::saveProject(const Project& project, QString* error)
 std::optional<Project> ShowRepository::loadProject(const Id& id) const
 {
     QSqlQuery q(m_db.database());
-    q.prepare(u"SELECT json FROM projects WHERE id = :id");
-    q.bindValue(u":id", id);
+    q.prepare(QStringLiteral(u"SELECT json FROM projects WHERE id = :id"));
+    q.bindValue(QStringLiteral(u":id"), id);
     if (!q.exec() || !q.next()) return std::nullopt;
     Project p = Project::fromJson(QJsonDocument::fromJson(q.value(0).toByteArray()).object());
     p.id = id;
@@ -374,7 +374,7 @@ QVector<Project> ShowRepository::listProjects() const
 {
     QVector<Project> out;
     QSqlQuery q(m_db.database());
-    q.exec(u"SELECT json FROM projects WHERE archived = 0 ORDER BY name COLLATE NOCASE");
+    q.exec(QStringLiteral(u"SELECT json FROM projects WHERE archived = 0 ORDER BY name COLLATE NOCASE"));
     while (q.next())
         out << Project::fromJson(QJsonDocument::fromJson(q.value(0).toByteArray()).object());
     return out;
@@ -383,15 +383,15 @@ QVector<Project> ShowRepository::listProjects() const
 bool ShowRepository::removeProject(const Id& id)
 {
     QSqlQuery q(m_db.database());
-    q.prepare(u"DELETE FROM projects WHERE id = :id");
-    q.bindValue(u":id", id);
+    q.prepare(QStringLiteral(u"DELETE FROM projects WHERE id = :id"));
+    q.bindValue(QStringLiteral(u":id"), id);
     return q.exec();
 }
 
 int ShowRepository::reindexFromDisk(QString* error)
 {
-    const QDir dir(QDir(m_dataDir).filePath(u"Shows"));
-    const auto files = dir.entryList({u"*.show"}, QDir::Files);
+    const QDir dir(QDir(m_dataDir).filePath(QStringLiteral(u"Shows")));
+    const auto files = dir.entryList({QStringLiteral(u"*.show")}, QDir::Files);
     int count = 0;
     for (const auto& name : files) {
         QFile f(dir.filePath(name));
@@ -399,7 +399,7 @@ int ShowRepository::reindexFromDisk(QString* error)
         const auto result = decodeShowFileRepair(f.readAll());
         f.close();
         if (!result.ok) {
-            if (error) *error = name + u": " + result.error;
+            if (error) *error = name + QStringLiteral(u": ")+ result.error;
             continue;
         }
         Show show = result.show;

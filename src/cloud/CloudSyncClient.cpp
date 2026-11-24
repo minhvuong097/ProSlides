@@ -30,9 +30,9 @@ void RelayTransport::disconnectFromServer()
 void RelayTransport::onConnected()
 {
     QJsonObject join;
-    join.insert(u"type", u"join");
-    join.insert(u"room", m_room);
-    join.insert(u"token", m_token);
+    join.insert(QStringLiteral(u"type"), QStringLiteral(u"join"));
+    join.insert(QStringLiteral(u"room"), m_room);
+    join.insert(QStringLiteral(u"token"), m_token);
     m_socket.sendTextMessage(QString::fromUtf8(QJsonDocument(join).toJson(QJsonDocument::Compact)));
     emit connectedChanged(true);
 }
@@ -47,19 +47,19 @@ void RelayTransport::onTextMessage(const QString& text)
     const auto doc = QJsonDocument::fromJson(text.toUtf8());
     if (!doc.isObject()) return;
     const auto obj = doc.object();
-    const QString type = obj.value(u"type").toString();
+    const QString type = obj.value(QStringLiteral(u"type")).toString();
 
-    if (type == u"peer") {
-        emit peerConnected(obj.value(u"id").toString());
+    if (type == QStringLiteral(u"peer")) {
+        emit peerConnected(obj.value(QStringLiteral(u"id")).toString());
         return;
     }
-    if (type == u"leave") {
-        emit peerDisconnected(obj.value(u"id").toString());
+    if (type == QStringLiteral(u"leave")) {
+        emit peerDisconnected(obj.value(QStringLiteral(u"id")).toString());
         return;
     }
-    if (type == u"message") {
-        const QString from = obj.value(u"from").toString();
-        emit messageReceived(from, obj.value(u"payload").toObject());
+    if (type == QStringLiteral(u"message")) {
+        const QString from = obj.value(QStringLiteral(u"from")).toString();
+        emit messageReceived(from, obj.value(QStringLiteral(u"payload")).toObject());
     }
 }
 
@@ -67,9 +67,9 @@ void RelayTransport::sendToPeer(const QString& peerId, const QJsonObject& messag
 {
     if (!connected()) return;
     QJsonObject o;
-    o.insert(u"type", u"message");
-    o.insert(u"to", peerId);
-    o.insert(u"payload", message);
+    o.insert(QStringLiteral(u"type"), QStringLiteral(u"message"));
+    o.insert(QStringLiteral(u"to"), peerId);
+    o.insert(QStringLiteral(u"payload"), message);
     m_socket.sendTextMessage(QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact)));
 }
 
@@ -77,8 +77,8 @@ void RelayTransport::broadcast(const QJsonObject& message)
 {
     if (!connected()) return;
     QJsonObject o;
-    o.insert(u"type", u"message");
-    o.insert(u"payload", message);
+    o.insert(QStringLiteral(u"type"), QStringLiteral(u"message"));
+    o.insert(QStringLiteral(u"payload"), message);
     m_socket.sendTextMessage(QString::fromUtf8(QJsonDocument(o).toJson(QJsonDocument::Compact)));
 }
 

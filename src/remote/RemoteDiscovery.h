@@ -22,7 +22,7 @@ class RemoteDiscovery : public QObject
 public:
     explicit RemoteDiscovery(QObject* parent = nullptr);
 
-    void start(quint16 servicePort, const QString& name = u"ProSlides");
+    void start(quint16 servicePort, const QString& name = QStringLiteral(u"ProSlides"));
     void stop();
 
 signals:

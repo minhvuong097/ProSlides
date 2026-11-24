@@ -5,38 +5,39 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QVariantMap>
+#include <algorithm>
 
 namespace ps::overlays {
 
 QJsonObject Overlay::toJson() const
 {
     QJsonObject o;
-    if (!id.isEmpty()) o.insert(u"id", id);
-    o.insert(u"name", name);
-    if (!color.isEmpty()) o.insert(u"color", color);
-    if (!category.isEmpty()) o.insert(u"category", category);
-    if (isDefault) o.insert(u"isDefault", true);
-    if (locked) o.insert(u"locked", true);
-    if (placeUnderSlide) o.insert(u"placeUnderSlide", true);
-    if (displayDuration > 0) o.insert(u"displayDuration", displayDuration);
+    if (!id.isEmpty()) o.insert(QStringLiteral(u"id"), id);
+    o.insert(QStringLiteral(u"name"), name);
+    if (!color.isEmpty()) o.insert(QStringLiteral(u"color"), color);
+    if (!category.isEmpty()) o.insert(QStringLiteral(u"category"), category);
+    if (isDefault) o.insert(QStringLiteral(u"isDefault"), true);
+    if (locked) o.insert(QStringLiteral(u"locked"), true);
+    if (placeUnderSlide) o.insert(QStringLiteral(u"placeUnderSlide"), true);
+    if (displayDuration > 0) o.insert(QStringLiteral(u"displayDuration"), displayDuration);
     QJsonArray itemsArr;
     for (const auto& item : items) itemsArr.append(item.toJson());
-    o.insert(u"items", itemsArr);
+    o.insert(QStringLiteral(u"items"), itemsArr);
     return o;
 }
 
 Overlay Overlay::fromJson(const QJsonObject& o)
 {
     Overlay overlay;
-    overlay.id = o.value(u"id").toString();
-    overlay.name = o.value(u"name").toString();
-    overlay.color = o.value(u"color").toString();
-    overlay.category = o.value(u"category").toString();
-    overlay.isDefault = o.value(u"isDefault").toBool(false);
-    overlay.locked = o.value(u"locked").toBool(false);
-    overlay.placeUnderSlide = o.value(u"placeUnderSlide").toBool(false);
-    overlay.displayDuration = o.value(u"displayDuration").toInt();
-    const auto arr = o.value(u"items").toArray();
+    overlay.id = o.value(QStringLiteral(u"id")).toString();
+    overlay.name = o.value(QStringLiteral(u"name")).toString();
+    overlay.color = o.value(QStringLiteral(u"color")).toString();
+    overlay.category = o.value(QStringLiteral(u"category")).toString();
+    overlay.isDefault = o.value(QStringLiteral(u"isDefault")).toBool(false);
+    overlay.locked = o.value(QStringLiteral(u"locked")).toBool(false);
+    overlay.placeUnderSlide = o.value(QStringLiteral(u"placeUnderSlide")).toBool(false);
+    overlay.displayDuration = o.value(QStringLiteral(u"displayDuration")).toInt();
+    const auto arr = o.value(QStringLiteral(u"items")).toArray();
     for (const auto& v : arr) {
         if (v.isObject()) overlay.items.push_back(Item::fromJson(v.toObject()));
     }
@@ -46,42 +47,42 @@ Overlay Overlay::fromJson(const QJsonObject& o)
 QJsonObject Scene::toJson() const
 {
     QJsonObject o;
-    if (!id.isEmpty()) o.insert(u"id", id);
-    o.insert(u"name", name);
+    if (!id.isEmpty()) o.insert(QStringLiteral(u"id"), id);
+    o.insert(QStringLiteral(u"name"), name);
     if (!media.isEmpty()) {
         QJsonObject m;
-        m.insert(u"path", media);
-        o.insert(u"media", m);
+        m.insert(QStringLiteral(u"path"), media);
+        o.insert(QStringLiteral(u"media"), m);
     }
-    if (!style.isEmpty()) o.insert(u"style", style);
+    if (!style.isEmpty()) o.insert(QStringLiteral(u"style"), style);
     if (!overlays.empty()) {
         QJsonArray arr;
         for (const auto& id : overlays) arr.append(id);
-        o.insert(u"overlays", arr);
+        o.insert(QStringLiteral(u"overlays"), arr);
     }
     if (!hiddenOverlays.empty()) {
         QJsonArray arr;
         for (const auto& id : hiddenOverlays) arr.append(id);
-        o.insert(u"hiddenOverlays", arr);
+        o.insert(QStringLiteral(u"hiddenOverlays"), arr);
     }
-    if (!bindings.isEmpty()) o.insert(u"bindings", bindings);
+    if (!bindings.isEmpty()) o.insert(QStringLiteral(u"bindings"), bindings);
     return o;
 }
 
 Scene Scene::fromJson(const QJsonObject& o)
 {
     Scene scene;
-    scene.id = o.value(u"id").toString();
-    scene.name = o.value(u"name").toString();
-    const auto media = o.value(u"media");
-    if (media.isObject()) scene.media = media.toObject().value(u"path").toString();
+    scene.id = o.value(QStringLiteral(u"id")).toString();
+    scene.name = o.value(QStringLiteral(u"name")).toString();
+    const auto media = o.value(QStringLiteral(u"media"));
+    if (media.isObject()) scene.media = media.toObject().value(QStringLiteral(u"path")).toString();
     else if (media.isString()) scene.media = media.toString();
-    scene.style = o.value(u"style").toString();
-    const auto oa = o.value(u"overlays").toArray();
+    scene.style = o.value(QStringLiteral(u"style")).toString();
+    const auto oa = o.value(QStringLiteral(u"overlays")).toArray();
     for (const auto& v : oa) if (v.isString()) scene.overlays.push_back(v.toString());
-    const auto ha = o.value(u"hiddenOverlays").toArray();
+    const auto ha = o.value(QStringLiteral(u"hiddenOverlays")).toArray();
     for (const auto& v : ha) if (v.isString()) scene.hiddenOverlays.push_back(v.toString());
-    if (const auto b = o.constFind(u"bindings"); b != o.constEnd() && b->isObject())
+    if (const auto b = o.constFind(QStringLiteral(u"bindings")); b != o.constEnd() && b->isObject())
         scene.bindings = b->toObject();
     return scene;
 }
@@ -111,11 +112,11 @@ void OverlayManager::rebuildOverlays()
     m_overlayModel.clear();
     for (const auto& overlay : m_overlayList) {
         QVariantMap m;
-        m.insert(u"id", overlay.id);
-        m.insert(u"name", overlay.name);
-        m.insert(u"color", overlay.color.isEmpty() ? u"#4aa8ff" : overlay.color);
-        m.insert(u"category", overlay.category);
-        m.insert(u"active", m_active.contains(overlay.id));
+        m.insert(QStringLiteral(u"id"), overlay.id);
+        m.insert(QStringLiteral(u"name"), overlay.name);
+        m.insert(QStringLiteral(u"color"), overlay.color.isEmpty() ? QStringLiteral(u"#4aa8ff"): overlay.color);
+        m.insert(QStringLiteral(u"category"), overlay.category);
+        m.insert(QStringLiteral(u"active"), m_active.contains(overlay.id));
         m_overlayModel.append(m);
     }
     emit overlaysChanged();
@@ -126,9 +127,9 @@ void OverlayManager::rebuildScenes()
     m_sceneModel.clear();
     for (const auto& scene : m_sceneList) {
         QVariantMap m;
-        m.insert(u"id", scene.id);
-        m.insert(u"name", scene.name);
-        m.insert(u"media", scene.media);
+        m.insert(QStringLiteral(u"id"), scene.id);
+        m.insert(QStringLiteral(u"name"), scene.name);
+        m.insert(QStringLiteral(u"media"), scene.media);
         m_sceneModel.append(m);
     }
     emit scenesChanged();
@@ -142,9 +143,9 @@ void OverlayManager::rebuildActive()
             QVariantList items;
             for (const auto& item : overlay->items) items.append(item.toJson());
             QVariantMap m;
-            m.insert(u"id", overlay->id);
-            m.insert(u"name", overlay->name);
-            m.insert(u"items", items);
+            m.insert(QStringLiteral(u"id"), overlay->id);
+            m.insert(QStringLiteral(u"name"), overlay->name);
+            m.insert(QStringLiteral(u"items"), items);
             m_activeModel.append(m);
         }
     }
@@ -156,10 +157,10 @@ void OverlayManager::load()
     m_overlayList.clear();
     m_sceneList.clear();
 
-    const QFile overlaysFile(QDir(m_directory).filePath(u"overlays.json"));
+    QFile overlaysFile(QDir(m_directory).filePath(QStringLiteral(u"overlays.json")));
     if (overlaysFile.exists() && overlaysFile.open(QIODevice::ReadOnly)) {
         const auto doc = QJsonDocument::fromJson(overlaysFile.readAll());
-        const auto arr = doc.isArray() ? doc.array() : doc.object().value(u"overlays").toArray();
+        const auto arr = doc.isArray() ? doc.array() : doc.object().value(QStringLiteral(u"overlays")).toArray();
         for (const auto& v : arr) {
             if (!v.isObject()) continue;
             auto overlay = Overlay::fromJson(v.toObject());
@@ -168,10 +169,10 @@ void OverlayManager::load()
         }
     }
 
-    const QFile scenesFile(QDir(m_directory).filePath(u"scenes.json"));
+    QFile scenesFile(QDir(m_directory).filePath(QStringLiteral(u"scenes.json")));
     if (scenesFile.exists() && scenesFile.open(QIODevice::ReadOnly)) {
         const auto doc = QJsonDocument::fromJson(scenesFile.readAll());
-        const auto arr = doc.isArray() ? doc.array() : doc.object().value(u"scenes").toArray();
+        const auto arr = doc.isArray() ? doc.array() : doc.object().value(QStringLiteral(u"scenes")).toArray();
         for (const auto& v : arr) {
             if (!v.isObject()) continue;
             auto scene = Scene::fromJson(v.toObject());
@@ -220,7 +221,8 @@ bool OverlayManager::startScene(const QString& id)
     if (!scene) return false;
     m_active.clear();
     for (const auto& overlay : scene->overlays) {
-        if (!scene->hiddenOverlays.contains(overlay)) m_active.append(overlay);
+        if (std::find(scene->hiddenOverlays.begin(), scene->hiddenOverlays.end(), overlay) == scene->hiddenOverlays.end())
+            m_active.append(overlay);
     }
     m_activeSceneName = scene->name;
     rebuildOverlays();

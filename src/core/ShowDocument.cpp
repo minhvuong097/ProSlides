@@ -1,4 +1,4 @@
-#include "ShowDocument.h"
+#include "core/ShowDocument.h"
 
 #include <algorithm>
 #include <iterator>
@@ -12,8 +12,8 @@ ShowDocument::ShowDocument(QObject* parent) : QObject(parent)
         const Id layoutId = makeId();
         Layout layout;
         layout.id = layoutId;
-        layout.name = u"Main";
-        m_show.layouts.insert(layoutId, layout);
+        layout.name = QStringLiteral(u"Main");
+        m_show.layouts.insert_or_assign(layoutId, std::move(layout));
         m_show.settings.activeLayout = layoutId;
     }
     m_show.timestamps.created = nowMillis();
@@ -186,15 +186,14 @@ Id ShowDocument::addLyricSlide(const QString& group, const QString& text,
 
     Item item;
     item.type = ItemType::Text;
-    item.align = u"center";
+    item.align = QStringLiteral(u"center");
     item.style = style.isEmpty()
-        ? u"font-size: 52px; font-weight: 700; text-align: center; color: #f5f5f5;"
-        : style;
+        ? QStringLiteral(u"font-size: 52px; font-weight: 700; text-align: center; color: #f5f5f5;"): style;
 
     // Parse optional chord markers: "[C]When all [G]see is the battle"
     for (const auto& rawLine : splitSections(text)) {
         Line line;
-        line.align = u"center";
+        line.align = QStringLiteral(u"center");
         QString clean;
         int i = 0;
         while (i < rawLine.size()) {
@@ -214,7 +213,7 @@ Id ShowDocument::addLyricSlide(const QString& group, const QString& text,
         }
         TextPart part;
         part.value = clean;
-        part.style = u"color: #f5f5f5;";
+        part.style = QStringLiteral(u"color: #f5f5f5;");
         line.text.push_back(std::move(part));
         slide.items.push_back(Item{});
         slide.items.back() = item;
@@ -231,7 +230,7 @@ Id ShowDocument::addMediaSlide(const QString& group, const QString& mediaPath, M
     Item item;
     item.type = (type == MediaType::Video) ? ItemType::Video : ItemType::Image;
     item.src = mediaPath;
-    item.fit = u"contain";
+    item.fit = QStringLiteral(u"contain");
     slide.items.push_back(std::move(item));
     return addSlide(std::move(slide), group);
 }
@@ -244,10 +243,11 @@ Id ShowDocument::addLayout(const QString& name)
     pushUndo();
     Layout layout;
     layout.id = makeId();
-    layout.name = name.isEmpty() ? u"Layout" : name;
-    m_show.layouts.insert(layout.id, std::move(layout));
+    layout.name = name.isEmpty() ? QStringLiteral(u"Layout"): name;
+    const Id insertedId = layout.id;
+    m_show.layouts.insert_or_assign(insertedId, std::move(layout));
     commit();
-    return layout.id;
+    return insertedId;
 }
 
 bool ShowDocument::renameLayout(const Id& id, const QString& name)

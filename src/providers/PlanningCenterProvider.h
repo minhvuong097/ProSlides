@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Types.h"
+#include "core/Types.h"
 
 #include <QObject>
 #include <QVariantList>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
+#include <QJsonDocument>
 
 namespace ps {
 class ShowRepository;

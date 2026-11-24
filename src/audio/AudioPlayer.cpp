@@ -68,11 +68,11 @@ void AudioPlayer::rebuild()
     for (int i = 0; i < m_tracks.size(); ++i) {
         const auto& track = m_tracks[size_t(i)];
         QVariantMap m;
-        m.insert(u"id", track.id);
-        m.insert(u"name", track.name);
-        m.insert(u"path", track.path);
-        m.insert(u"duration", track.duration);
-        m.insert(u"active", i == m_index);
+        m.insert(QStringLiteral(u"id"), track.id);
+        m.insert(QStringLiteral(u"name"), track.name);
+        m.insert(QStringLiteral(u"path"), track.path);
+        m.insert(QStringLiteral(u"duration"), track.duration);
+        m.insert(QStringLiteral(u"active"), i == m_index);
         m_model.append(m);
     }
     emit tracksChanged();

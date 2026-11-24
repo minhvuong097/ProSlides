@@ -1,4 +1,4 @@
-#include "ShowFile.h"
+#include "core/ShowFile.h"
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -25,7 +25,7 @@ ShowFileResult decodeShowFile(const QByteArray& bytes)
         return result;
     }
     if (!doc.isArray() || doc.array().size() != 2 || !doc.array().at(1).isObject()) {
-        result.error = u"Invalid .show file: expected [id, Show] tuple";
+        result.error = QStringLiteral(u"Invalid .show file: expected [id, Show] tuple");
         return result;
     }
     const auto arr = doc.array();
@@ -70,7 +70,7 @@ ShowFileResult decodeShowFileRepair(const QByteArray& bytes)
         if (nl <= 0) break;
         candidate.truncate(nl);
     }
-    result.error = u"Unable to repair .show file";
+    result.error = QStringLiteral(u"Unable to repair .show file");
     return result;
 }
 
@@ -79,14 +79,14 @@ QString sanitizeFileName(const QString& name)
     QString s = name.trimmed();
     for (const QChar forbidden : { '/', '\\', ':', '*', '?', '"', '<', '>', '|' })
         s.replace(forbidden, u'-');
-    while (s.contains(u"--")) s.replace(u"--", u"-");
-    if (s.isEmpty()) s = u"Untitled";
+    while (s.contains(QStringLiteral(u"--"))) s.replace(QStringLiteral(u"--"), QStringLiteral(u"-"));
+    if (s.isEmpty()) s = QStringLiteral(u"Untitled");
     return s;
 }
 
 QString showFilePath(const QString& dataDir, const QString& name)
 {
-    return QDir(dataDir).filePath(sanitizeFileName(name) + u".show");
+    return QDir(dataDir).filePath(sanitizeFileName(name) + QStringLiteral(u".show"));
 }
 
 } // namespace ps

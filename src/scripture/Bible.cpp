@@ -9,70 +9,70 @@ namespace ps::scripture {
 QJsonObject Bible::toJson() const
 {
     QJsonObject root;
-    root.insert(u"name", name);
-    if (!copyright.isEmpty()) root.insert(u"copyright", copyright);
-    if (!metadata.isEmpty()) root.insert(u"metadata", metadata);
+    root.insert(QStringLiteral(u"name"), name);
+    if (!copyright.isEmpty()) root.insert(QStringLiteral(u"copyright"), copyright);
+    if (!metadata.isEmpty()) root.insert(QStringLiteral(u"metadata"), metadata);
 
     QJsonArray booksArr;
     for (const auto& book : books) {
         QJsonObject bo;
-        bo.insert(u"number", book.number);
-        bo.insert(u"name", book.name);
-        if (!book.customName.isEmpty()) bo.insert(u"customName", book.customName);
-        if (!book.abbreviation.isEmpty()) bo.insert(u"abbreviation", book.abbreviation);
+        bo.insert(QStringLiteral(u"number"), book.number);
+        bo.insert(QStringLiteral(u"name"), book.name);
+        if (!book.customName.isEmpty()) bo.insert(QStringLiteral(u"customName"), book.customName);
+        if (!book.abbreviation.isEmpty()) bo.insert(QStringLiteral(u"abbreviation"), book.abbreviation);
         QJsonArray chaptersArr;
         for (const auto& chapter : book.chapters) {
             QJsonObject co;
-            co.insert(u"number", chapter.number);
+            co.insert(QStringLiteral(u"number"), chapter.number);
             QJsonArray versesArr;
             for (const auto& verse : chapter.verses) {
                 QJsonObject vo;
-                vo.insert(u"number", verse.number);
-                if (!verse.value.isEmpty()) vo.insert(u"value", verse.value);
-                vo.insert(u"text", verse.text);
+                vo.insert(QStringLiteral(u"number"), verse.number);
+                if (!verse.value.isEmpty()) vo.insert(QStringLiteral(u"value"), verse.value);
+                vo.insert(QStringLiteral(u"text"), verse.text);
                 versesArr.append(vo);
             }
-            co.insert(u"verses", versesArr);
+            co.insert(QStringLiteral(u"verses"), versesArr);
             chaptersArr.append(co);
         }
-        bo.insert(u"chapters", chaptersArr);
+        bo.insert(QStringLiteral(u"chapters"), chaptersArr);
         booksArr.append(bo);
     }
-    root.insert(u"books", booksArr);
+    root.insert(QStringLiteral(u"books"), booksArr);
     return root;
 }
 
 Bible Bible::fromJson(const QJsonObject& o)
 {
     Bible b;
-    b.name = o.value(u"name").toString();
-    b.copyright = o.value(u"copyright").toString();
-    if (const auto v = o.constFind(u"metadata"); v != o.constEnd() && v->isObject())
+    b.name = o.value(QStringLiteral(u"name")).toString();
+    b.copyright = o.value(QStringLiteral(u"copyright")).toString();
+    if (const auto v = o.constFind(QStringLiteral(u"metadata")); v != o.constEnd() && v->isObject())
         b.metadata = v->toObject();
 
-    const auto arr = o.value(u"books").toArray();
+    const auto arr = o.value(QStringLiteral(u"books")).toArray();
     for (const auto& bv : arr) {
         if (!bv.isObject()) continue;
         const auto bo = bv.toObject();
         Book book;
-        book.number = bo.value(u"number").toInt();
-        book.name = bo.value(u"name").toString();
-        book.customName = bo.value(u"customName").toString();
-        book.abbreviation = bo.value(u"abbreviation").toString();
-        const auto chapters = bo.value(u"chapters").toArray();
+        book.number = bo.value(QStringLiteral(u"number")).toInt();
+        book.name = bo.value(QStringLiteral(u"name")).toString();
+        book.customName = bo.value(QStringLiteral(u"customName")).toString();
+        book.abbreviation = bo.value(QStringLiteral(u"abbreviation")).toString();
+        const auto chapters = bo.value(QStringLiteral(u"chapters")).toArray();
         for (const auto& cv : chapters) {
             if (!cv.isObject()) continue;
             const auto co = cv.toObject();
             Chapter chapter;
-            chapter.number = co.value(u"number").toInt();
-            const auto verses = co.value(u"verses").toArray();
+            chapter.number = co.value(QStringLiteral(u"number")).toInt();
+            const auto verses = co.value(QStringLiteral(u"verses")).toArray();
             for (const auto& vv : verses) {
                 if (!vv.isObject()) continue;
                 const auto vo = vv.toObject();
                 Verse verse;
-                verse.number = vo.value(u"number").toInt();
-                verse.value = vo.value(u"value").toString();
-                verse.text = vo.value(u"text").toString();
+                verse.number = vo.value(QStringLiteral(u"number")).toInt();
+                verse.value = vo.value(QStringLiteral(u"value")).toString();
+                verse.text = vo.value(QStringLiteral(u"text")).toString();
                 chapter.verses.append(verse);
             }
             book.chapters.append(chapter);
@@ -118,7 +118,7 @@ ScriptureRef parseReference(const QString& reference, const Bible& bible)
     if (bookNumber == 0) return ref;
 
     const QString tail = needle.mid(consumed).trimmed();
-    static const QRegularExpression pattern(u"^(\\d+)\\s*:\\s*(\\d+)(?:\\s*-\\s*(\\d+))?$");
+    static const QRegularExpression pattern(QStringLiteral(u"^(\\d+)\\s*:\\s*(\\d+)(?:\\s*-\\s*(\\d+))?$"));
     const auto match = pattern.match(tail);
     if (!match.hasMatch()) return ref;
 
@@ -136,9 +136,9 @@ QString referenceToString(const ScriptureRef& ref, const Bible& bible)
         if (book.number != ref.book) continue;
         const QString name = book.customName.isEmpty() ? book.name : book.customName;
         const QString range = ref.endVerse > 0
-            ? QString::number(ref.verse) + u"-" + QString::number(ref.endVerse)
+            ? QString::number(ref.verse) + QStringLiteral(u"-")+ QString::number(ref.endVerse)
             : QString::number(ref.verse);
-        return name + u" " + QString::number(ref.chapter) + u":" + range;
+        return name + QStringLiteral(u" ")+ QString::number(ref.chapter) + QStringLiteral(u":")+ range;
     }
     return {};
 }
@@ -156,7 +156,7 @@ BibleFileResult decodeBibleFile(const QByteArray& bytes)
     BibleFileResult result;
     const auto doc = QJsonDocument::fromJson(bytes);
     if (!doc.isArray() || doc.array().size() != 2 || !doc.array().at(1).isObject()) {
-        result.error = u"Invalid .fsb file";
+        result.error = QStringLiteral(u"Invalid .fsb file");
         return result;
     }
     result.bible = Bible::fromJson(doc.array().at(1).toObject());

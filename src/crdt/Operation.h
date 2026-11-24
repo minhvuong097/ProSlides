@@ -3,6 +3,7 @@
 #include <QString>
 #include <QStringList>
 #include <QJsonValue>
+#include <QJsonObject>
 
 #include <cstdint>
 

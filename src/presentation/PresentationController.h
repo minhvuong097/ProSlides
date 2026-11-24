@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Types.h"
+#include "core/Types.h"
 #include "core/ShowDocument.h"
 #include "persistence/ShowRepository.h"
 #include "crdt/Document.h"
@@ -103,7 +103,7 @@ public:
     QVariantList plans() const { return m_planningCenter.plans(); }
 
     ShowDocument& document() { return m_document; }
-    OutputManager& output() { return m_output; }
+    output::OutputManager& output() { return m_output; }
     ShowRepository& repository() { return m_repository; }
     crdt::Document& crdtDocument() { return m_crdt; }
 

@@ -1,4 +1,4 @@
-#include "Database.h"
+#include "persistence/Database.h"
 
 #include <QDir>
 #include <QFile>
@@ -8,6 +8,10 @@
 #include <QUuid>
 
 namespace ps {
+
+Database::Database() : Database(defaultPath())
+{
+}
 
 Database::Database(const QString& filePath, QObject* parent)
     : QObject(parent)
@@ -25,7 +29,7 @@ QString Database::defaultPath()
 {
     const QString base = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     QDir().mkpath(base);
-    return QDir(base).filePath(u"proslides.db");
+    return QDir(base).filePath(QStringLiteral(u"proslides.db"));
 }
 
 bool Database::open(QString* error)
@@ -34,9 +38,9 @@ bool Database::open(QString* error)
 
     QDir().mkpath(QFileInfo(m_filePath).absolutePath());
 
-    m_db = QSqlDatabase::addDatabase(u"QSQLITE", m_connectionName);
+    m_db = QSqlDatabase::addDatabase(QStringLiteral(u"QSQLITE"), m_connectionName);
     m_db.setDatabaseName(m_filePath);
-    m_db.setConnectOptions(u"QSQLITE_BUSY_TIMEOUT=5000");
+    m_db.setConnectOptions(QStringLiteral(u"QSQLITE_BUSY_TIMEOUT=5000"));
 
     if (!m_db.open()) {
         if (error) *error = m_db.lastError().text();
@@ -44,11 +48,11 @@ bool Database::open(QString* error)
     }
 
     QSqlQuery q(m_db);
-    q.exec(u"PRAGMA journal_mode=WAL");
-    q.exec(u"PRAGMA synchronous=NORMAL");
-    q.exec(u"PRAGMA foreign_keys=ON");
-    q.exec(u"PRAGMA temp_store=MEMORY");
-    q.exec(u"PRAGMA cache_size=-20000"); // ~20 MB page cache
+    q.exec(QStringLiteral(u"PRAGMA journal_mode=WAL"));
+    q.exec(QStringLiteral(u"PRAGMA synchronous=NORMAL"));
+    q.exec(QStringLiteral(u"PRAGMA foreign_keys=ON"));
+    q.exec(QStringLiteral(u"PRAGMA temp_store=MEMORY"));
+    q.exec(QStringLiteral(u"PRAGMA cache_size=-20000")); // ~20 MB page cache
 
     return applySchema(error);
 }
@@ -122,8 +126,8 @@ QStringList splitSqlStatements(const QString& sql)
             int j = i;
             while (j < sql.size() && sql[j].isLetter()) ++j;
             const QString word = sql.mid(i, j - i).toUpper();
-            if (word == u"BEGIN") ++depth;
-            else if (word == u"END" && depth > 0) --depth;
+            if (word == QStringLiteral(u"BEGIN")) ++depth;
+            else if (word == QStringLiteral(u"END")&& depth > 0) --depth;
             current += sql.mid(i, j - i);
             i = j - 1;
             continue;
@@ -144,19 +148,19 @@ QStringList splitSqlStatements(const QString& sql)
 
 bool Database::applySchema(QString* error)
 {
-    QFile file(u":/schema.sql");
+    QFile file(QStringLiteral(u":/schema.sql"));
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        if (error) *error = u"Cannot open embedded schema resource";
+        if (error) *error = QStringLiteral(u"Cannot open embedded schema resource");
         return false;
     }
     const QString sql = QString::fromUtf8(file.readAll());
     file.close();
 
     for (const auto& statement : splitSqlStatements(sql)) {
-        if (statement.startsWith(u"--")) continue;
+        if (statement.startsWith(QStringLiteral(u"--"))) continue;
         QSqlQuery q(m_db);
         if (!q.exec(statement)) {
-            if (error) *error = q.lastError().text() + u"\nSQL: " + statement.left(160);
+            if (error) *error = q.lastError().text() + QStringLiteral(u"\nSQL: ")+ statement.left(160);
             return false;
         }
     }

@@ -1,4 +1,4 @@
-#include "Document.h"
+#include "crdt/Document.h"
 
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -320,35 +320,35 @@ void Document::mergeVectorClock(const VectorClock& other)
 QByteArray Document::serialize() const
 {
     QJsonObject root;
-    root.insert(u"actor", actorId());
-    root.insert(u"clock", m_clock.value());
+    root.insert(QStringLiteral(u"actor"), actorId());
+    root.insert(QStringLiteral(u"clock"), m_clock.value());
     QJsonObject vector;
     const auto vc = m_clock.vector();
     for (auto it = vc.constBegin(); it != vc.constEnd(); ++it)
         vector.insert(it.key(), it.value());
-    root.insert(u"vector", vector);
+    root.insert(QStringLiteral(u"vector"), vector);
     QJsonArray ops;
     for (const auto& op : m_ops) ops.append(op.toJson());
-    root.insert(u"ops", ops);
+    root.insert(QStringLiteral(u"ops"), ops);
     return QJsonDocument(root).toJson(QJsonDocument::Compact);
 }
 
-Document Document::deserialize(const QByteArray& data, QString actorId)
+std::unique_ptr<Document> Document::deserialize(const QByteArray& data, QString actorId)
 {
-    Document doc(std::move(actorId));
+    auto doc = std::make_unique<Document>(std::move(actorId));
     const auto obj = QJsonDocument::fromJson(data).object();
     VectorClock vc;
-    const auto vobj = obj.value(u"vector").toObject();
+    const auto vobj = obj.value(QStringLiteral(u"vector")).toObject();
     for (auto it = vobj.constBegin(); it != vobj.constEnd(); ++it)
         vc.insert(it.key(), static_cast<ClockValue>(it.value().toDouble()));
-    doc.m_clock.setVector(vc);
+    doc->m_clock.setVector(vc);
 
     QVector<Operation> ops;
-    const auto arr = obj.value(u"ops").toArray();
+    const auto arr = obj.value(QStringLiteral(u"ops")).toArray();
     for (const auto& v : arr) {
         if (v.isObject()) ops.append(Operation::fromJson(v.toObject()));
     }
-    doc.applyBatch(ops);
+    doc->applyBatch(ops);
     return doc;
 }
 

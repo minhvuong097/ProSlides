@@ -17,7 +17,7 @@ QImage Thumbnailer::cached(const QString& path) const
 
 QImage Thumbnailer::thumbnail(const QString& path)
 {
-    if (const auto cached = cached(path); !cached.isNull()) return cached;
+    if (const auto cachedImage = cached(path); !cachedImage.isNull()) return cachedImage;
 
     QImage image;
     QImageReader reader(path);
@@ -28,7 +28,7 @@ QImage Thumbnailer::thumbnail(const QString& path)
     if (image.isNull()) {
         // Video/audio files: draw a neutral placeholder (no QtWidgets needed).
         image = QImage(m_size, QImage::Format_ARGB32);
-        image.fill(QColor(u"#232329"));
+        image.fill(QColor(QStringLiteral(u"#232329")));
     }
     if (!image.isNull()) m_cache.insert(path, image);
     emit ready(path, image);

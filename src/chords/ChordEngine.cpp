@@ -21,13 +21,13 @@ int letterSemitone(const QChar letter)
     }
 }
 
-QStringList sharpNames() { return { u"C", u"C#", u"D", u"D#", u"E", u"F", u"F#", u"G", u"G#", u"A", u"A#", u"B" }; }
-QStringList flatNames()  { return { u"C", u"Db", u"D", u"Eb", u"E", u"F", u"Gb", u"G", u"Ab", u"A", u"Bb", u"B" }; }
+QStringList sharpNames() { return { QStringLiteral(u"C"), QStringLiteral(u"C#"), QStringLiteral(u"D"), QStringLiteral(u"D#"), QStringLiteral(u"E"), QStringLiteral(u"F"), QStringLiteral(u"F#"), QStringLiteral(u"G"), QStringLiteral(u"G#"), QStringLiteral(u"A"), QStringLiteral(u"A#"), QStringLiteral(u"B")}; }
+QStringList flatNames()  { return { QStringLiteral(u"C"), QStringLiteral(u"Db"), QStringLiteral(u"D"), QStringLiteral(u"Eb"), QStringLiteral(u"E"), QStringLiteral(u"F"), QStringLiteral(u"Gb"), QStringLiteral(u"G"), QStringLiteral(u"Ab"), QStringLiteral(u"A"), QStringLiteral(u"Bb"), QStringLiteral(u"B")}; }
 
 // Match the leading root of a chord: note + optional accidental.
 QRegularExpression rootPattern()
 {
-    static const QRegularExpression p(u"^([A-Ga-g])([#b]?)");
+    static const QRegularExpression p(QStringLiteral(u"^([A-Ga-g])([#b]?)"));
     return p;
 }
 
@@ -40,8 +40,8 @@ int rootToSemitone(const QString& root)
     int value = letterSemitone(match.captured(1).at(0));
     if (value < 0) return -1;
     const QString accidental = match.captured(2);
-    if (accidental == u"#") ++value;
-    else if (accidental == u"b") --value;
+    if (accidental == QStringLiteral(u"#")) ++value;
+    else if (accidental == QStringLiteral(u"b")) --value;
     return (value % 12 + 12) % 12;
 }
 

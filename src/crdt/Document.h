@@ -7,6 +7,7 @@
 #include <QJsonObject>
 #include <QSet>
 #include <QVector>
+#include <memory>
 
 namespace ps::crdt {
 
@@ -48,7 +49,7 @@ public:
     void mergeVectorClock(const VectorClock& other);
 
     QByteArray serialize() const;
-    static Document deserialize(const QByteArray& data, QString actorId = {});
+    static std::unique_ptr<Document> deserialize(const QByteArray& data, QString actorId = {});
 
 signals:
     void operationReady(const Operation& op);      // broadcast this op
