@@ -74,7 +74,8 @@ CI hiện build với Qt 6.8 LTS (xem `.github/workflows/build.yml`). Xem chi ti
 1. Mở app, nhập lyric vào vùng Slides (cú pháp `[C]` cho hợp âm), bấm **Add slide**.
 2. Bấm **Present (F5)** để mở cửa sổ trình chiếu.
 3. `Space` / `←` / `→` điều hướng slide, `Ctrl+S` lưu file `.show`.
-4. Bật **Remote** trên thanh trên cùng để điều khiển từ điện thoại.
+4. `Ctrl+K` mở Quick Search (FTS5) để tìm slide/group/ghi chú và nhảy tới slide.
+5. Bật **Remote** trên thanh trên cùng để điều khiển từ điện thoại.
 
 <a id="structure"></a>
 ## Cấu trúc

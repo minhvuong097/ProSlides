@@ -10,6 +10,7 @@
         <file>qml/components/OutputPanel.qml</file>
         <file>qml/components/MediaLibrary.qml</file>
         <file>qml/components/TopBar.qml</file>
+        <file>qml/components/QuickSearch.qml</file>
         <file>qml/components/ChordStrip.qml</file>
         <file>qml/components/TimelinePanel.qml</file>
         <file>qml/components/ScripturePanel.qml</file>

@@ -97,4 +97,11 @@ Item {
     Shortcut { sequence: "F5"; onActivated: ProSlides.startPresenting() }
     Shortcut { sequence: "Ctrl+S"; onActivated: ProSlides.saveShow() }
     Shortcut { sequence: "Esc"; onActivated: ProSlides.stopPresenting() }
+
+    QuickSearch {
+        id: quickSearch
+        x: (parent.width - width) / 2
+        y: (parent.height - height) / 2
+    }
+    Shortcut { sequence: "Ctrl+K"; onActivated: quickSearch.open() }
 }
