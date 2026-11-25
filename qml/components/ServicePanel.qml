@@ -4,7 +4,6 @@ import "qrc:/qml/theme"
 
 Item {
     id: panel
-    anchors.fill: parent
     clip: true
 
     Rectangle { anchors.fill: parent; color: Theme.panel }
@@ -22,7 +21,7 @@ Item {
             Text { anchors.verticalCenter: parent.verticalCenter; text: "Service Flow"; color: Theme.text; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
             ComboBox {
                 id: projectBox
-                width: 150
+                width: 128
                 height: 28
                 anchors.verticalCenter: parent.verticalCenter
                 model: ProSlides.projects
@@ -34,7 +33,7 @@ Item {
                 background: Rectangle { radius: Theme.radiusSmall; color: Theme.surface; border.color: Theme.border }
                 contentItem: Text { text: projectBox.displayText; color: Theme.text; font: Theme.smallFont; verticalAlignment: Text.AlignVCenter }
             }
-            Text { anchors.verticalCenter: parent.verticalCenter; text: Qt.formatDateTime(new Date(), "dddd, MMM d, yyyy"); color: Theme.textDim; font: Theme.smallFont }
+            Text { anchors.verticalCenter: parent.verticalCenter; text: Qt.formatDateTime(new Date(), "ddd, d MMM"); color: Theme.textDim; font: Theme.smallFont; elide: Text.ElideRight; width: Math.max(0, parent.width - x) }
         }
     }
 

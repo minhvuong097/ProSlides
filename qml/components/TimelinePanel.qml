@@ -46,7 +46,7 @@ Item {
         anchors.topMargin: 6
         spacing: 8
 
-        Text { anchors.verticalCenter: parent.verticalCenter; text: "Timeline"; color: Theme.text; font: Theme.smallFont; font.bold: true }
+        Text { anchors.verticalCenter: parent.verticalCenter; text: "Timeline"; color: Theme.text; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }) }
 
         Button {
             id: playBtn; text: ProSlides.timelinePlaying ? "❚❚" : "▶"; width: 30; implicitHeight: 24

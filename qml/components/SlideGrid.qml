@@ -4,7 +4,6 @@ import "qrc:/qml/theme"
 
 Item {
     id: grid
-    anchors.fill: parent
     property bool editMode: false
 
     Rectangle { anchors.fill: parent; color: Theme.bg }

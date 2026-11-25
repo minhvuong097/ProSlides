@@ -4,7 +4,6 @@ import "qrc:/qml/theme"
 
 Item {
     id: panel
-    anchors.fill: parent
 
     Rectangle { anchors.fill: parent; color: Theme.panel }
 
@@ -127,11 +126,11 @@ Item {
                 anchors.margins: 12
                 spacing: 10
 
-                Row {
+                Item {
                     width: parent.width
-                    Text { text: "Service Controls"; color: Theme.text; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
-                    Item { width: parent.width - 200 }
-                    Text { text: ProSlides.clockText; color: Theme.accent; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
+                    height: 22
+                    Text { anchors.left: parent.left; anchors.verticalCenter: parent.verticalCenter; text: "Service Controls"; color: Theme.text; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
+                    Text { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; text: ProSlides.clockText; color: Theme.accent; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
                 }
 
                 Rectangle { width: parent.width; height: 1; color: Theme.border }

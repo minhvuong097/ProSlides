@@ -4,7 +4,6 @@ import "qrc:/qml/theme"
 
 Item {
     id: library
-    anchors.fill: parent
     clip: true
 
     Rectangle { anchors.fill: parent; color: Theme.panelAlt }
@@ -23,7 +22,7 @@ Item {
             Text { anchors.verticalCenter: parent.verticalCenter; text: "Media"; color: Theme.text; font: Qt.font({ family: Theme.bodyFont.family, pixelSize: Theme.bodyFont.pixelSize, bold: true }) }
             TextField {
                 id: searchField
-                width: 150
+                width: Math.max(120, parent.width - 70)
                 height: 28
                 placeholderText: "Search…"
                 color: Theme.text

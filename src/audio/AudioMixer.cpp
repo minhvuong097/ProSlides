@@ -32,7 +32,7 @@ void AudioMixer::rebuild()
         m.insert(QStringLiteral(u"volume"), channel.volume);
         m.insert(QStringLiteral(u"muted"), channel.muted);
         m.insert(QStringLiteral(u"solo"), channel.solo);
-        m.insert(QStringLiteral(u"playing"), channel.player && channel.player.playbackState() == QMediaPlayer::PlayingState);
+        m.insert(QStringLiteral(u"playing"), channel.player && channel.player->playbackState() == QMediaPlayer::PlayingState);
         m_model.append(m);
     }
     emit channelsChanged();

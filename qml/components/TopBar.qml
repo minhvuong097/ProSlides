@@ -4,7 +4,6 @@ import "qrc:/qml/theme"
 
 Item {
     id: bar
-    anchors.fill: parent
 
     Rectangle {
         anchors.fill: parent

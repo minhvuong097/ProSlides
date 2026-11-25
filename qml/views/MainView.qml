@@ -5,7 +5,6 @@ import "qrc:/qml/components"
 
 Item {
     id: root
-    anchors.fill: parent
 
     TopBar {
         id: topBar
