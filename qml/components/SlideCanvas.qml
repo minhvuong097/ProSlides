@@ -32,6 +32,18 @@ Item {
                 border.color: selected ? Theme.accent : (mouse.containsMouse ? Theme.blue : "transparent")
                 border.width: selected ? 2 : 1
 
+                Repeater {
+                    model: modelData.chords || []
+                    delegate: Text {
+                        x: (modelData.pos || 0) * (itemBox.height / 8)
+                        y: 2
+                        text: modelData.key
+                        color: Theme.yellow
+                        font.pixelSize: 11
+                        font.bold: true
+                    }
+                }
+
                 Text {
                     anchors.fill: parent
                     text: modelData.text

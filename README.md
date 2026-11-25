@@ -53,6 +53,7 @@ Các module đã có trong `src/`:
 | `chords` | Chuyển hợp âm cả show, nhận diện key, slash chord |
 | Service Flow | Tạo project, thêm/xóa item, mở và điều hướng theo service |
 | Visual editor | Chế độ Editor: kéo item, đổi cỡ chữ/màu/căn chỉnh trên canvas |
+| Output renderer | Render geometry/style/chord overlay; hỗ trợ item timer/clock/slide tracker |
 | Audio mixer | Nhiều kênh audio: play/stop, mute/solo, volume, Routing cơ bản |
 | Streaming/NDI | RTMP/HLS qua FFmpeg, NDI sender (cần NDI SDK), điều khiển từ remote |
 | Stage display | Màn hình riêng cho ca sĩ: slide hiện tại, slide kế, notes, đồng hồ |

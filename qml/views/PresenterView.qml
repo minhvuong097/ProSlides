@@ -4,12 +4,15 @@ import QtQuick.Controls 2.15
 import "qrc:/qml/theme"
 
 // Audience display window. Properties are written from OutputManager via
-// QQmlProperty, so this view stays a pure, dumb renderer.
+// QQmlProperty; slide content is read from the shared controller context.
 Window {
     id: outputWindow
     property var currentSlide: ({})
     property bool cleared: false
     property string backgroundPath: ""
+
+    readonly property real scaleX: width / 1920
+    readonly property real scaleY: height / 1080
 
     visible: true
     color: Theme.black
@@ -20,7 +23,6 @@ Window {
         color: Theme.black
 
         Image {
-            id: background
             anchors.fill: parent
             source: outputWindow.backgroundPath ? "file://" + outputWindow.backgroundPath : ""
             fillMode: Image.PreserveAspectCrop
@@ -28,34 +30,38 @@ Window {
             opacity: 0.35
         }
 
-        Column {
-            anchors.centerIn: parent
-            width: parent.width * 0.86
-            spacing: 24
-            visible: !outputWindow.cleared
+        Repeater {
+            model: outputWindow.cleared ? [] : ProSlides.slideItems
+            delegate: Item {
+                property int itemFontSize: modelData.fontSize
+                x: modelData.x * outputWindow.scaleX
+                y: modelData.y * outputWindow.scaleY
+                width: modelData.width * outputWindow.scaleX
+                height: modelData.height * outputWindow.scaleY
 
-            Repeater {
-                model: {
-                    const slide = outputWindow.currentSlide || {};
-                    const items = slide.items || [];
-                    let lines = [];
-                    items.forEach(function(item) {
-                        (item.lines || []).forEach(function(line) {
-                            let text = "";
-                            (line.text || []).forEach(function(part) { text += part.value || ""; });
-                            if (text.length) lines.push(text);
-                        });
-                    });
-                    return lines;
-                }
-                delegate: Text {
-                    width: parent.width
-                    text: modelData
-                    color: Theme.text
-                    font.pixelSize: 72
+                Text {
+                    anchors.fill: parent
+                    text: modelData.text
+                    color: modelData.color
+                    font.pixelSize: modelData.fontSize * outputWindow.scaleY
                     font.bold: true
                     wrapMode: Text.WordWrap
-                    horizontalAlignment: Text.AlignHCenter
+                    horizontalAlignment: modelData.align === "left" ? Text.AlignLeft
+                                        : (modelData.align === "right" ? Text.AlignRight : Text.AlignHCenter)
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                // Chord overlay — positioned approximately by character offset.
+                Repeater {
+                    model: modelData.chords || []
+                    delegate: Text {
+                        x: (modelData.pos || 0) * (itemFontSize * 0.55) * outputWindow.scaleX
+                        y: -24 * outputWindow.scaleY
+                        text: modelData.key
+                        color: Theme.yellow
+                        font.pixelSize: Math.max(12, 22 * outputWindow.scaleY)
+                        font.bold: true
+                    }
                 }
             }
         }

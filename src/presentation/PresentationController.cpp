@@ -312,7 +312,26 @@ QVariantList PresentationController::slideItems() const
         m.insert(QStringLiteral(u"index"), int(i));
         m.insert(QStringLiteral(u"id"), item.id);
         m.insert(QStringLiteral(u"type"), itemTypeToString(item.type));
-        m.insert(QStringLiteral(u"text"), item.plainText());
+        QString text = item.plainText();
+        if (item.type == ItemType::Timer || item.type == ItemType::Clock)
+            text = m_clockText;
+        else if (item.type == ItemType::SlideTracker)
+            text = QString::number(m_output.currentIndex() + 1) + QStringLiteral(u" / ")
+                 + QString::number(m_slideOrder.size());
+        else if (item.type == ItemType::CurrentOutput)
+            text = m_document.name();
+        m.insert(QStringLiteral(u"text"), text);
+
+        QVariantList chords;
+        for (const auto& line : item.lines) {
+            for (const auto& chord : line.chords) {
+                QVariantMap c;
+                c.insert(QStringLiteral(u"key"), chord.key);
+                c.insert(QStringLiteral(u"pos"), chord.pos);
+                chords.append(c);
+            }
+        }
+        m.insert(QStringLiteral(u"chords"), chords);
         m.insert(QStringLiteral(u"x"), item.x);
         m.insert(QStringLiteral(u"y"), item.y);
         m.insert(QStringLiteral(u"width"), item.width);
