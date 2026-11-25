@@ -49,7 +49,7 @@ Các module đã có trong `src/`:
 | `crdt` | Đồng bộ LWW + RGA với Lamport/vector clock |
 | `remote` | WebSocket điều khiển, discovery UDP, API kiểu FreeShow |
 | `media`, `output` | Video FFmpeg/Qt Multimedia, màn hình output, NDI, ghi hình MP4 |
-| `timeline`, `scripture`, `timers` | Timeline playback, Kinh Thánh `.fsb`, hẹn giờ dịch vụ |
+| `timeline`, `scripture`, `timers` | Visual timeline editor (kéo block, resize, zoom, playhead), Kinh Thánh `.fsb`, hẹn giờ |
 | `chords` | Chuyển hợp âm cả show, nhận diện key, slash chord |
 | Service Flow | Tạo project, thêm/xóa item, mở và điều hướng theo service |
 | Visual editor | Chế độ Editor: kéo item, đổi cỡ chữ/màu/căn chỉnh trên canvas |

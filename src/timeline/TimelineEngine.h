@@ -49,6 +49,7 @@ public slots:
                                qint64 timeMs, double durationSeconds);
     Q_INVOKABLE bool removeAction(const QString& id);
     Q_INVOKABLE void updateActionTime(const QString& id, qint64 timeMs);
+    Q_INVOKABLE void updateActionDuration(const QString& id, double seconds);
     Q_INVOKABLE void clear();
 
 signals:

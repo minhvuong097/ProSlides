@@ -690,6 +690,14 @@ bool PresentationController::removeTimelineAction(const QString& id)
 {
     return m_timeline.removeAction(id);
 }
+void PresentationController::setTimelineActionTime(const QString& id, qint64 timeMs)
+{
+    m_timeline.updateActionTime(id, timeMs);
+}
+void PresentationController::setTimelineActionDuration(const QString& id, double seconds)
+{
+    m_timeline.updateActionDuration(id, seconds);
+}
 
 void PresentationController::onTimelineAction(const TimelineAction& action)
 {

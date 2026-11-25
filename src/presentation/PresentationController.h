@@ -157,6 +157,8 @@ public:
     Q_INVOKABLE void addTimelineAction(const QString& name, const QString& type,
                                        qint64 timeMs, double durationSeconds);
     Q_INVOKABLE bool removeTimelineAction(const QString& id);
+    Q_INVOKABLE void setTimelineActionTime(const QString& id, qint64 timeMs);
+    Q_INVOKABLE void setTimelineActionDuration(const QString& id, double seconds);
 
     // Scripture
     Q_INVOKABLE QVariantList scriptureSearch(const QString& query);

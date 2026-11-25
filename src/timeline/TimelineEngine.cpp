@@ -210,6 +210,15 @@ void TimelineEngine::updateActionTime(const QString& id, qint64 timeMs)
     emit actionsChanged();
 }
 
+void TimelineEngine::updateActionDuration(const QString& id, double seconds)
+{
+    const int index = findAction(id);
+    if (index < 0) return;
+    m_actions[size_t(index)].duration = qMax(0.0, seconds);
+    rebuildActions();
+    emit actionsChanged();
+}
+
 void TimelineEngine::clear()
 {
     stop();
