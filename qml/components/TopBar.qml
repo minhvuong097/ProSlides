@@ -43,6 +43,13 @@ Item {
         spacing: 8
 
         Button {
+            id: mixerBtn; text: "Mixer"; implicitHeight: 32
+            onClicked: mixerPopup.open()
+            background: Rectangle { radius: Theme.radiusSmall; color: Theme.surface; border.color: Theme.border }
+            contentItem: Text { text: mixerBtn.text; color: Theme.text; font: Theme.smallFont; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+        }
+
+        Button {
             id: stageBtn
             text: ProSlides.stageVisible ? "Stage ●" : "Stage"
             implicitHeight: 32
@@ -87,5 +94,11 @@ Item {
             background: Rectangle { radius: Theme.radiusSmall; color: Theme.accent }
             contentItem: Text { text: presentBtn.text; color: Theme.black; font: Qt.font({ family: Theme.smallFont.family, pixelSize: Theme.smallFont.pixelSize, bold: true }); horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
         }
+    }
+
+    MixerPanel {
+        id: mixerPopup
+        x: (bar.width - width) / 2
+        y: 70
     }
 }

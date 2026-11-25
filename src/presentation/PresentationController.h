@@ -17,6 +17,7 @@
 #include "templates/TemplateLibrary.h"
 #include "overlays/OverlayManager.h"
 #include "audio/AudioPlayer.h"
+#include "audio/AudioMixer.h"
 #include "triggers/TriggerManager.h"
 #include "backup/BackupManager.h"
 #include "providers/PlanningCenterProvider.h"
@@ -61,6 +62,7 @@ class PresentationController : public QObject
     Q_PROPERTY(QVariantList scenes READ scenes NOTIFY overlaysChanged)
     Q_PROPERTY(QVariantList activeOverlays READ activeOverlays NOTIFY overlaysChanged)
     Q_PROPERTY(QVariantList audioTracks READ audioTracks NOTIFY audioChanged)
+    Q_PROPERTY(QVariantList mixerChannels READ mixerChannels NOTIFY mixerChanged)
     Q_PROPERTY(QString audioTrack READ audioTrack NOTIFY audioChanged)
     Q_PROPERTY(bool audioPlaying READ audioPlaying NOTIFY audioChanged)
     Q_PROPERTY(QVariantList triggers READ triggers NOTIFY triggersChanged)
@@ -99,6 +101,7 @@ public:
     QVariantList scenes() const { return m_overlays.scenes(); }
     QVariantList activeOverlays() const { return m_overlays.activeOverlays(); }
     QVariantList audioTracks() const { return m_audio.tracks(); }
+    QVariantList mixerChannels() const { return m_mixer.channels(); }
     QString audioTrack() const { return m_audio.currentName(); }
     bool audioPlaying() const { return m_audio.playing(); }
     QVariantList triggers() const { return m_triggers.triggers(); }
@@ -192,6 +195,13 @@ public:
     Q_INVOKABLE void previousAudio();
     Q_INVOKABLE void setAudioVolume(double volume);
     Q_INVOKABLE void setAudioMuted(bool muted);
+    Q_INVOKABLE QString addMixerChannel(const QString& name, const QString& path);
+    Q_INVOKABLE bool removeMixerChannel(const QString& id);
+    Q_INVOKABLE bool playMixerChannel(const QString& id);
+    Q_INVOKABLE bool stopMixerChannel(const QString& id);
+    Q_INVOKABLE bool setMixerVolume(const QString& id, double volume);
+    Q_INVOKABLE bool toggleMixerMute(const QString& id);
+    Q_INVOKABLE bool toggleMixerSolo(const QString& id);
     Q_INVOKABLE void seekAudio(qint64 ms);
     Q_INVOKABLE bool connectMidi(int device = 0);
     Q_INVOKABLE void disconnectMidi();
@@ -241,6 +251,7 @@ signals:
     void templatesChanged();
     void overlaysChanged();
     void audioChanged();
+    void mixerChanged();
     void triggersChanged();
     void recordingChanged();
     void cloudChanged();
@@ -285,6 +296,7 @@ private:
     templates::TemplateLibrary m_templates;
     overlays::OverlayManager m_overlays;
     audio::AudioPlayer m_audio;
+    audio::AudioMixer m_mixer;
     triggers::TriggerManager m_triggers;
     backup::BackupManager m_backup;
     providers::PlanningCenterProvider m_planningCenter{&m_repository};

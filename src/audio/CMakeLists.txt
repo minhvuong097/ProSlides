@@ -1,5 +1,6 @@
 add_library(ps_audio STATIC
     AudioPlayer.cpp
+    AudioMixer.cpp
 )
 
 target_include_directories(ps_audio PUBLIC

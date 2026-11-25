@@ -63,6 +63,9 @@ ProSlides dùng WebSocket (mặc định `ws://<host>:5510`) với envelope gi�
 | `play_audio` / `pause_audio` / `stop_audio` | `{}` | `true` |
 | `audio_seekto` | `{seconds}` | vị trí ms |
 | `change_volume` / `mute` | `{volume}` / `{value}` | `true` |
+| `get_audio_mixer` / `create_audio_channel` | `{}` / `{name,path}` | mảng / channel id |
+| `play_audio_channel` / `stop_audio_channel` | `{id}` | bool |
+| `set_channel_volume` / `toggle_channel_mute` / `toggle_channel_solo` | `{id,volume}` / `{id}` | bool |
 | `get_audio` / `get_playlists` | `{}` | trạng thái / mảng track |
 | `get_triggers` / `connect_midi` | `{}` / `{device}` | mảng / bool |
 | `transpose_show_up` / `transpose_show_down` | `{}` | `true` |

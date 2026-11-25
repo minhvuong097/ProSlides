@@ -86,6 +86,8 @@ PresentationController::PresentationController(QObject* parent)
             this, &PresentationController::audioChanged);
     connect(&m_audio, &audio::AudioPlayer::playingChanged,
             this, &PresentationController::audioChanged);
+    connect(&m_mixer, &audio::AudioMixer::channelsChanged,
+            this, &PresentationController::mixerChanged);
 
     connect(&m_output, &output::OutputManager::recordingChanged,
             this, &PresentationController::recordingChanged);
@@ -798,6 +800,17 @@ void PresentationController::nextAudio() { m_audio.next(); }
 void PresentationController::previousAudio() { m_audio.previous(); }
 void PresentationController::setAudioVolume(double volume) { m_audio.setVolume(volume); }
 void PresentationController::setAudioMuted(bool muted) { m_audio.setMuted(muted); }
+
+QString PresentationController::addMixerChannel(const QString& name, const QString& path)
+{
+    return m_mixer.addChannel(name, path);
+}
+bool PresentationController::removeMixerChannel(const QString& id) { return m_mixer.removeChannel(id); }
+bool PresentationController::playMixerChannel(const QString& id) { return m_mixer.playChannel(id); }
+bool PresentationController::stopMixerChannel(const QString& id) { return m_mixer.stopChannel(id); }
+bool PresentationController::setMixerVolume(const QString& id, double volume) { return m_mixer.setChannelVolume(id, volume); }
+bool PresentationController::toggleMixerMute(const QString& id) { return m_mixer.toggleMute(id); }
+bool PresentationController::toggleMixerSolo(const QString& id) { return m_mixer.toggleSolo(id); }
 void PresentationController::seekAudio(qint64 ms) { m_audio.seek(ms); }
 
 bool PresentationController::connectMidi(int device) { return m_triggers.connectMidi(device); }
@@ -1013,6 +1026,19 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
         result = o;
     }
     else if (api == "get_playlists") { result = QJsonArray::fromVariantList(m_audio.tracks()); }
+    else if (api == "get_audio_mixer") { result = QJsonArray::fromVariantList(m_mixer.channels()); }
+    else if (api == "create_audio_channel") {
+        result = addMixerChannel(data.value(QStringLiteral(u"name")).toString(),
+                                 data.value(QStringLiteral(u"path")).toString());
+    }
+    else if (api == "play_audio_channel") { result = playMixerChannel(data.value(QStringLiteral(u"id")).toString()); }
+    else if (api == "stop_audio_channel") { result = stopMixerChannel(data.value(QStringLiteral(u"id")).toString()); }
+    else if (api == "set_channel_volume") {
+        result = setMixerVolume(data.value(QStringLiteral(u"id")).toString(),
+                                data.value(QStringLiteral(u"volume")).toDouble());
+    }
+    else if (api == "toggle_channel_mute") { result = toggleMixerMute(data.value(QStringLiteral(u"id")).toString()); }
+    else if (api == "toggle_channel_solo") { result = toggleMixerSolo(data.value(QStringLiteral(u"id")).toString()); }
     else if (api == "get_triggers") { result = QJsonArray::fromVariantList(m_triggers.triggers()); }
     else if (api == "connect_midi") { result = connectMidi(data.value(QStringLiteral(u"device")).toInt(0)); }
     else if (api == "transpose_show_up") { result = transposeShow(1); }
