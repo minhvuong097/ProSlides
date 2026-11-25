@@ -53,6 +53,7 @@ Các module đã có trong `src/`:
 | `chords` | Chuyển hợp âm cả show, nhận diện key, slash chord |
 | Service Flow | Tạo project, thêm/xóa item, mở và điều hướng theo service |
 | Visual editor | Chế độ Editor: kéo item, đổi cỡ chữ/màu/căn chỉnh trên canvas |
+| Stage display | Màn hình riêng cho ca sĩ: slide hiện tại, slide kế, notes, đồng hồ |
 | `templates`, `overlays`, `audio`, `triggers` | Template, overlay/scene, playlist audio, MIDI/phím tắt |
 | `backup`, `providers`, `cloud` | Sao lưu, Planning Center, relay CRDT |
 | `presentation`, `app` | Controller trung tâm và entry point |

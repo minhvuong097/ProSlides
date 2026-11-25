@@ -20,6 +20,7 @@
         <file>qml/components/AudioPanel.qml</file>
         <file>qml/views/MainView.qml</file>
         <file>qml/views/PresenterView.qml</file>
+        <file>qml/views/StageView.qml</file>
         <file>resources/icons/app.svg</file>
         <file>resources/icons/logo-icon.svg</file>
         <file>resources/icons/logo-icon-light.svg</file>

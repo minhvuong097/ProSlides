@@ -22,6 +22,7 @@
 #include "providers/PlanningCenterProvider.h"
 #include "cloud/CloudSyncClient.h"
 #include "chords/ChordEngine.h"
+#include "stage/StageManager.h"
 
 #include <QObject>
 #include <QVariantList>
@@ -66,6 +67,7 @@ class PresentationController : public QObject
     Q_PROPERTY(bool midiConnected READ midiConnected NOTIFY triggersChanged)
     Q_PROPERTY(bool recording READ recording NOTIFY recordingChanged)
     Q_PROPERTY(QVariantList slideItems READ slideItems NOTIFY stateChanged)
+    Q_PROPERTY(bool stageVisible READ stageVisible NOTIFY stageChanged)
     Q_PROPERTY(bool cloudConnected READ cloudConnected NOTIFY cloudChanged)
     Q_PROPERTY(QVariantList backups READ backups NOTIFY backupsChanged)
     Q_PROPERTY(QVariantList plans READ plans NOTIFY plansChanged)
@@ -107,6 +109,7 @@ public:
     QVariantList plans() const { return m_planningCenter.plans(); }
     QVariantList projects() const;
     QVariantList slideItems() const;
+    bool stageVisible() const { return m_stage.visible(); }
     QString activeProjectId() const { return m_activeProjectId; }
 
     ShowDocument& document() { return m_document; }
@@ -134,6 +137,8 @@ public:
     Q_INVOKABLE void restoreOutput();
     Q_INVOKABLE void startPresenting();
     Q_INVOKABLE void stopPresenting();
+    Q_INVOKABLE bool toggleStage(int screenIndex = 1);
+    Q_INVOKABLE void closeStage();
 
     Q_INVOKABLE void search(const QString& query);
     Q_INVOKABLE bool openSearchResult(int row);
@@ -220,6 +225,7 @@ signals:
     void showChanged();
     void slidesChanged();
     void stateChanged();
+    void stageChanged();
     void searchResultsChanged();
     void mediaFilesChanged();
     void remoteChanged();
@@ -258,6 +264,7 @@ private:
     QJsonArray showsForRemote() const;
     void setLayoutFromRemote(const QString& layoutId);
     void loadTimelineForShow();
+    void refreshStage();
     QQmlEngine* m_engine = nullptr;
 
     Database m_database;
@@ -280,6 +287,7 @@ private:
     backup::BackupManager m_backup;
     providers::PlanningCenterProvider m_planningCenter{&m_repository};
     cloud::CloudSyncClient m_cloud{m_crdt};
+    stage::StageManager m_stage;
 
     QVariantList m_slides;
     QVariantList m_searchResults;

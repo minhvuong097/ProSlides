@@ -90,6 +90,13 @@ PresentationController::PresentationController(QObject* parent)
     connect(&m_output, &output::OutputManager::recordingChanged,
             this, &PresentationController::recordingChanged);
 
+    connect(&m_stage, &stage::StageManager::visibleChanged,
+            this, &PresentationController::stageChanged);
+    connect(&m_output, &output::OutputManager::stateChanged,
+            this, [this]() { refreshStage(); });
+    connect(&m_output, &output::OutputManager::slidesChanged,
+            this, [this]() { refreshStage(); });
+
     m_backup.setDataDirectory(base);
     m_backup.refresh();
     connect(&m_backup, &backup::BackupManager::backupsChanged,
@@ -408,6 +415,44 @@ void PresentationController::stopPresenting()
     closeDisplays();
     m_output.clearAll();
     emit toast(QStringLiteral(u"Presentation stopped"));
+}
+
+void PresentationController::refreshStage()
+{
+    const int index = m_output.currentIndex();
+    const int count = int(m_slideOrder.size());
+    const Id currentId = m_slideOrder.value(index);
+    const Id nextId = m_slideOrder.value(index + 1);
+
+    const auto& slides = m_document.show().slides;
+    const auto current = slides.find(currentId);
+    const auto next = slides.find(nextId);
+
+    QVariantMap state;
+    state.insert(QStringLiteral(u"current"), current != slides.end() ? current->second.plainText() : QString{});
+    state.insert(QStringLiteral(u"next"), next != slides.end() ? next->second.plainText() : QString{});
+    state.insert(QStringLiteral(u"notes"), current != slides.end() ? current->second.notes : QString{});
+    state.insert(QStringLiteral(u"number"), count > 0
+                 ? QString::number(index + 1) + QStringLiteral(u" / ") + QString::number(count)
+                 : QString{});
+    state.insert(QStringLiteral(u"clock"), m_clockText);
+    state.insert(QStringLiteral(u"cleared"), m_output.cleared());
+    m_stage.setState(state);
+}
+
+bool PresentationController::toggleStage(int screenIndex)
+{
+    if (!m_engine) {
+        emit errorOccurred(QStringLiteral(u"QML engine not attached"));
+        return false;
+    }
+    m_stage.toggle(m_engine, screenIndex);
+    return m_stage.visible();
+}
+
+void PresentationController::closeStage()
+{
+    m_stage.close();
 }
 
 // ---------------------------------------------------------------------------
@@ -934,6 +979,15 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
     else if (api == "get_overlays") { result = QJsonArray::fromVariantList(m_overlays.overlays()); }
     else if (api == "start_scene") { result = startScene(data.value(QStringLiteral(u"id")).toString()); }
     else if (api == "clear_scene") { m_overlays.clearScene(); result = true; }
+    else if (api == "toggle_stage" || api == "start_stage") {
+        result = toggleStage(data.value(QStringLiteral(u"screen")).toInt(1));
+    }
+    else if (api == "close_stage") { closeStage(); result = true; }
+    else if (api == "stage_status") {
+        QJsonObject o;
+        o.insert(QStringLiteral(u"visible"), stageVisible());
+        result = o;
+    }
     else if (api == "play_audio") { playAudio(); result = true; }
     else if (api == "pause_audio") { pauseAudio(); result = true; }
     else if (api == "stop_audio") { stopAudio(); result = true; }

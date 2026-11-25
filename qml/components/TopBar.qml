@@ -43,6 +43,19 @@ Item {
         spacing: 8
 
         Button {
+            id: stageBtn
+            text: ProSlides.stageVisible ? "Stage ●" : "Stage"
+            implicitHeight: 32
+            onClicked: ProSlides.toggleStage(1)
+            background: Rectangle {
+                radius: Theme.radiusSmall
+                color: ProSlides.stageVisible ? Theme.purple : Theme.surface
+                border.color: Theme.border
+            }
+            contentItem: Text { text: stageBtn.text; color: ProSlides.stageVisible ? Theme.black : Theme.text; font: Theme.smallFont; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+        }
+
+        Button {
             id: remoteBtn
             text: ProSlides.remoteEnabled ? "Remote ●" : "Remote"
             implicitHeight: 32
