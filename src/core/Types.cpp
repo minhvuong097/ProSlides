@@ -436,6 +436,13 @@ QJsonObject Item::toJson() const
     if (list) o.insert(QStringLiteral(u"list"), list->toJson());
     putOpt(o, "textFit", textFit);
     putOptNum(o, "autoFontSize", autoFontSize);
+    o.insert(QStringLiteral(u"x"), x);
+    o.insert(QStringLiteral(u"y"), y);
+    o.insert(QStringLiteral(u"width"), width);
+    o.insert(QStringLiteral(u"height"), height);
+    o.insert(QStringLiteral(u"fontSize"), fontSize);
+    o.insert(QStringLiteral(u"color"), color);
+    o.insert(QStringLiteral(u"alignSelf"), alignSelf);
     putOpt(o, "src", src);
     putOpt(o, "customSvg", customSvg);
     putOpt(o, "filter", filter);
@@ -487,6 +494,13 @@ Item Item::fromJson(const QJsonObject& o)
         it.list = listFromJson(v->toObject());
     it.textFit = optStr(o, "textFit");
     it.autoFontSize = optInt(o, "autoFontSize");
+    if (const auto v = o.constFind(QStringLiteral(u"x")); v != o.constEnd() && v->isDouble()) it.x = v->toDouble();
+    if (const auto v = o.constFind(QStringLiteral(u"y")); v != o.constEnd() && v->isDouble()) it.y = v->toDouble();
+    if (const auto v = o.constFind(QStringLiteral(u"width")); v != o.constEnd() && v->isDouble()) it.width = v->toDouble();
+    if (const auto v = o.constFind(QStringLiteral(u"height")); v != o.constEnd() && v->isDouble()) it.height = v->toDouble();
+    if (const auto v = o.constFind(QStringLiteral(u"fontSize")); v != o.constEnd() && v->isDouble()) it.fontSize = int(v->toDouble());
+    if (const auto v = optStr(o, "color")) it.color = *v;
+    if (const auto v = optStr(o, "alignSelf")) it.alignSelf = *v;
     it.src = optStr(o, "src");
     it.customSvg = optStr(o, "customSvg");
     it.filter = optStr(o, "filter");
@@ -523,7 +537,11 @@ Item Item::fromJson(const QJsonObject& o)
     // Preserve unrecognised fields for round-trip compatibility.
     static const QStringList known = {
         QStringLiteral(u"id"), QStringLiteral(u"type"), QStringLiteral(u"style"), QStringLiteral(u"align"), QStringLiteral(u"specialStyle"), QStringLiteral(u"lines"), QStringLiteral(u"list"),
-        QStringLiteral(u"textFit"), QStringLiteral(u"autoFontSize"), QStringLiteral(u"src"), QStringLiteral(u"customSvg"), QStringLiteral(u"filter"), QStringLiteral(u"blend"),
+        QStringLiteral(u"textFit"), QStringLiteral(u"autoFontSize"),
+        QStringLiteral(u"x"), QStringLiteral(u"y"), QStringLiteral(u"width"),
+        QStringLiteral(u"height"), QStringLiteral(u"fontSize"),
+        QStringLiteral(u"color"), QStringLiteral(u"alignSelf"),
+        QStringLiteral(u"src"), QStringLiteral(u"customSvg"), QStringLiteral(u"filter"), QStringLiteral(u"blend"),
         QStringLiteral(u"cropping"), QStringLiteral(u"muted"), QStringLiteral(u"loop"), QStringLiteral(u"volume"), QStringLiteral(u"speed"), QStringLiteral(u"fromTime"),
         QStringLiteral(u"toTime"), QStringLiteral(u"fit"), QStringLiteral(u"decoration"), QStringLiteral(u"clickReveal"), QStringLiteral(u"lineReveal"),
         QStringLiteral(u"bindings"), QStringLiteral(u"actions"), QStringLiteral(u"scrolling"), QStringLiteral(u"chords"), QStringLiteral(u"language"),

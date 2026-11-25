@@ -52,6 +52,7 @@ Các module đã có trong `src/`:
 | `timeline`, `scripture`, `timers` | Timeline playback, Kinh Thánh `.fsb`, hẹn giờ dịch vụ |
 | `chords` | Chuyển hợp âm cả show, nhận diện key, slash chord |
 | Service Flow | Tạo project, thêm/xóa item, mở và điều hướng theo service |
+| Visual editor | Chế độ Editor: kéo item, đổi cỡ chữ/màu/căn chỉnh trên canvas |
 | `templates`, `overlays`, `audio`, `triggers` | Template, overlay/scene, playlist audio, MIDI/phím tắt |
 | `backup`, `providers`, `cloud` | Sao lưu, Planning Center, relay CRDT |
 | `presentation`, `app` | Controller trung tâm và entry point |

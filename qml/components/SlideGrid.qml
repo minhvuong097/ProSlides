@@ -5,6 +5,7 @@ import "qrc:/qml/theme"
 Item {
     id: grid
     anchors.fill: parent
+    property bool editMode: false
 
     Rectangle { anchors.fill: parent; color: Theme.bg }
 
@@ -68,6 +69,13 @@ Item {
                     contentItem: Text { text: downBtn.text; color: Theme.text; font: Theme.smallFont; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
                 }
                 Button {
+                    id: editorBtn; text: grid.editMode ? "Grid" : "Editor"; implicitHeight: 34
+                    onClicked: grid.editMode = !grid.editMode
+                    background: Rectangle { radius: Theme.radiusSmall; color: grid.editMode ? Theme.accent : Theme.surface; border.color: Theme.border }
+                    contentItem: Text { text: editorBtn.text; color: grid.editMode ? Theme.black : Theme.text; font: Theme.smallFont; horizontalAlignment: Text.AlignHCenter; verticalAlignment: Text.AlignVCenter }
+                }
+
+                Button {
                     id: upBtn; text: "K+"; implicitHeight: 34
                     onClicked: ProSlides.transposeShow(1)
                     background: Rectangle { radius: Theme.radiusSmall; color: Theme.surface; border.color: Theme.border }
@@ -92,6 +100,13 @@ Item {
     }
 
     // --- slide grid ------------------------------------------------------
+    SlideCanvas {
+        id: canvas
+        anchors.left: parent.left; anchors.right: parent.right
+        anchors.top: header.bottom; anchors.bottom: footer.top
+        visible: grid.editMode
+    }
+
     GridView {
         id: view
         anchors.left: parent.left; anchors.right: parent.right
@@ -101,6 +116,7 @@ Item {
         cellHeight: 200
         model: ProSlides.slides
         clip: true
+        visible: !grid.editMode
 
         delegate: Item {
             width: view.cellWidth - 14

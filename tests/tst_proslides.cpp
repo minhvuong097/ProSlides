@@ -77,6 +77,7 @@ void ProSlidesTest::showFileRoundTrip()
     QCOMPARE(result.show.name, show.name);
     QCOMPARE(result.show.slides.size(), size_t(1));
     QCOMPARE(result.show.slides.begin()->second.items.at(0).plainText(), QStringLiteral(u"Amazing grace"));
+    QCOMPARE(result.show.slides.begin()->second.items.at(0).fontSize, 52);
 
     // FreeShow files are [id, Show] tuples.
     const auto doc = QJsonDocument::fromJson(bytes);

@@ -7,6 +7,7 @@
 #include <QFile>
 #include <QJsonArray>
 #include <QJsonDocument>
+#include <QVariantMap>
 #include <QDateTime>
 #include <QHostInfo>
 #include <QNetworkInterface>
@@ -283,6 +284,53 @@ void PresentationController::rebuildSlides()
         m_slides.append(slideToMap(ref.id, index++));
     }
     emit slidesChanged();
+}
+
+QVariantList PresentationController::slideItems() const
+{
+    QVariantList out;
+    const Id slideId = m_slideOrder.value(m_output.currentIndex());
+    const auto it = m_document.show().slides.find(slideId);
+    if (it == m_document.show().slides.end()) return out;
+
+    for (qsizetype i = 0; i < it->second.items.size(); ++i) {
+        const auto& item = it->second.items[size_t(i)];
+        QVariantMap m;
+        m.insert(QStringLiteral(u"index"), int(i));
+        m.insert(QStringLiteral(u"id"), item.id);
+        m.insert(QStringLiteral(u"type"), itemTypeToString(item.type));
+        m.insert(QStringLiteral(u"text"), item.plainText());
+        m.insert(QStringLiteral(u"x"), item.x);
+        m.insert(QStringLiteral(u"y"), item.y);
+        m.insert(QStringLiteral(u"width"), item.width);
+        m.insert(QStringLiteral(u"height"), item.height);
+        m.insert(QStringLiteral(u"fontSize"), item.fontSize);
+        m.insert(QStringLiteral(u"color"), item.color);
+        m.insert(QStringLiteral(u"align"), item.alignSelf);
+        out.append(m);
+    }
+    return out;
+}
+
+bool PresentationController::updateSlideItem(int index, const QVariantMap& props)
+{
+    const Id slideId = m_slideOrder.value(m_output.currentIndex());
+    const auto it = m_document.show().slides.find(slideId);
+    if (it == m_document.show().slides.end() || index < 0 || index >= int(it->second.items.size()))
+        return false;
+
+    Slide updated = it->second;
+    auto& item = updated.items[size_t(index)];
+    if (props.contains(QStringLiteral(u"x"))) item.x = props.value(QStringLiteral(u"x")).toDouble();
+    if (props.contains(QStringLiteral(u"y"))) item.y = props.value(QStringLiteral(u"y")).toDouble();
+    if (props.contains(QStringLiteral(u"width"))) item.width = props.value(QStringLiteral(u"width")).toDouble();
+    if (props.contains(QStringLiteral(u"height"))) item.height = props.value(QStringLiteral(u"height")).toDouble();
+    if (props.contains(QStringLiteral(u"fontSize"))) item.fontSize = props.value(QStringLiteral(u"fontSize")).toInt();
+    if (props.contains(QStringLiteral(u"color"))) item.color = props.value(QStringLiteral(u"color")).toString();
+    if (props.contains(QStringLiteral(u"align"))) item.alignSelf = props.value(QStringLiteral(u"align")).toString();
+    if (!m_document.updateSlide(slideId, std::move(updated))) return false;
+    pushOutput();
+    return true;
 }
 
 void PresentationController::pushOutput()

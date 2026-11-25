@@ -65,6 +65,7 @@ class PresentationController : public QObject
     Q_PROPERTY(QVariantList triggers READ triggers NOTIFY triggersChanged)
     Q_PROPERTY(bool midiConnected READ midiConnected NOTIFY triggersChanged)
     Q_PROPERTY(bool recording READ recording NOTIFY recordingChanged)
+    Q_PROPERTY(QVariantList slideItems READ slideItems NOTIFY stateChanged)
     Q_PROPERTY(bool cloudConnected READ cloudConnected NOTIFY cloudChanged)
     Q_PROPERTY(QVariantList backups READ backups NOTIFY backupsChanged)
     Q_PROPERTY(QVariantList plans READ plans NOTIFY plansChanged)
@@ -105,6 +106,7 @@ public:
     QVariantList backups() const { return m_backup.backups(); }
     QVariantList plans() const { return m_planningCenter.plans(); }
     QVariantList projects() const;
+    QVariantList slideItems() const;
     QString activeProjectId() const { return m_activeProjectId; }
 
     ShowDocument& document() { return m_document; }
@@ -121,6 +123,7 @@ public:
                                       const QString& key = {});
     Q_INVOKABLE QString addMediaSlide(const QString& group, const QString& path);
     Q_INVOKABLE bool deleteSlide(const QString& id);
+    Q_INVOKABLE bool updateSlideItem(int index, const QVariantMap& props);
     Q_INVOKABLE bool duplicateSlide(const QString& id);
     Q_INVOKABLE void moveSlide(int from, int to);
 

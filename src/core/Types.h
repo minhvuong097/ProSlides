@@ -142,6 +142,16 @@ struct Item {
     std::optional<QString> textFit;      // autosize mode
     std::optional<int> autoFontSize;
 
+    // Visual editor geometry (FreeShow stores this inside the CSS style;
+    // ProSlides keeps it as explicit fields and also mirrors it into style).
+    double x = 0.0;
+    double y = 0.0;
+    double width = 900.0;
+    double height = 160.0;
+    int fontSize = 52;
+    QString color = QStringLiteral(u"#f5f5f5");
+    QString alignSelf = QStringLiteral(u"center");
+
     // media items
     std::optional<QString> src;
     std::optional<QString> customSvg;
