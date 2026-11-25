@@ -27,6 +27,7 @@
 
 #include <QObject>
 #include <QVariantList>
+#include <QString>
 #include <QJsonObject>
 #include <QTimer>
 
@@ -68,6 +69,8 @@ class PresentationController : public QObject
     Q_PROPERTY(QVariantList triggers READ triggers NOTIFY triggersChanged)
     Q_PROPERTY(bool midiConnected READ midiConnected NOTIFY triggersChanged)
     Q_PROPERTY(bool recording READ recording NOTIFY recordingChanged)
+    Q_PROPERTY(bool streaming READ streaming NOTIFY streamingChanged)
+    Q_PROPERTY(bool ndiActive READ ndiActive NOTIFY ndiChanged)
     Q_PROPERTY(QVariantList slideItems READ slideItems NOTIFY stateChanged)
     Q_PROPERTY(bool stageVisible READ stageVisible NOTIFY stageChanged)
     Q_PROPERTY(bool cloudConnected READ cloudConnected NOTIFY cloudChanged)
@@ -107,6 +110,8 @@ public:
     QVariantList triggers() const { return m_triggers.triggers(); }
     bool midiConnected() const { return m_triggers.midiConnected(); }
     bool recording() const { return m_output.recording(); }
+    bool streaming() const { return m_output.streaming(); }
+    bool ndiActive() const { return m_output.ndiActive(); }
     bool cloudConnected() const { return m_cloud.connected(); }
     QVariantList backups() const { return m_backup.backups(); }
     QVariantList plans() const { return m_planningCenter.plans(); }
@@ -212,6 +217,10 @@ public:
     // Recording
     Q_INVOKABLE bool startRecording(const QString& path);
     Q_INVOKABLE void stopRecording();
+    Q_INVOKABLE bool startStreaming(const QString& url, bool hls = false);
+    Q_INVOKABLE void stopStreaming();
+    Q_INVOKABLE bool startNdi(const QString& name = QStringLiteral(u"ProSlides"));
+    Q_INVOKABLE void stopNdi();
 
     // Backup / content providers / cloud
     Q_INVOKABLE QString backupNow(const QString& label = {});
@@ -254,6 +263,8 @@ signals:
     void mixerChanged();
     void triggersChanged();
     void recordingChanged();
+    void streamingChanged();
+    void ndiChanged();
     void cloudChanged();
     void backupsChanged();
     void plansChanged();

@@ -2,8 +2,11 @@
 
 #include "DisplayOutput.h"
 #include "recording/OutputRecorder.h"
+#include "streaming/StreamOutput.h"
+#include "NdiOutput.h"
 
 #include <QObject>
+#include <QString>
 #include <QJsonObject>
 #include <QVector>
 #include <QTimer>
@@ -27,6 +30,9 @@ class OutputManager : public QObject
     Q_PROPERTY(int displayCount READ displayCount NOTIFY displayCountChanged)
     Q_PROPERTY(bool recording READ recording NOTIFY recordingChanged)
     Q_PROPERTY(QString recordingPath READ recordingPath NOTIFY recordingChanged)
+    Q_PROPERTY(bool streaming READ streaming NOTIFY streamingChanged)
+    Q_PROPERTY(QString streamTarget READ streamTarget NOTIFY streamingChanged)
+    Q_PROPERTY(bool ndiActive READ ndiActive NOTIFY ndiChanged)
 
 public:
     explicit OutputManager(QObject* parent = nullptr);
@@ -36,6 +42,9 @@ public:
     int displayCount() const { return m_displays.size(); }
     bool recording() const { return m_recorder.recording(); }
     QString recordingPath() const { return m_recorder.outputPath(); }
+    bool streaming() const { return m_stream.active(); }
+    QString streamTarget() const { return m_stream.target(); }
+    bool ndiActive() const { return m_ndi.isActive(); }
     QJsonObject currentSlide() const;
     bool cleared() const { return m_cleared; }
     QString backgroundPath() const { return m_background; }
@@ -60,6 +69,10 @@ public slots:
     Q_INVOKABLE bool startRecording(const QString& path);
     Q_INVOKABLE void stopRecording();
     Q_INVOKABLE void toggleRecording(const QString& path);
+    Q_INVOKABLE bool startStreaming(const QString& url, bool hls = false);
+    Q_INVOKABLE void stopStreaming();
+    Q_INVOKABLE bool startNdi(const QString& name = QStringLiteral(u"ProSlides"));
+    Q_INVOKABLE void stopNdi();
 
 signals:
     void stateChanged();
@@ -68,6 +81,8 @@ signals:
     void slideChanged(const QJsonObject& slide);
     void displayCountChanged(int count);
     void recordingChanged(bool recording);
+    void streamingChanged(bool active);
+    void ndiChanged(bool active);
 
 private slots:
     void updateClock();
@@ -87,6 +102,8 @@ private:
     QString m_clockText;
     QTimer m_clock;
     recording::OutputRecorder m_recorder;
+    streaming::StreamOutput m_stream;
+    NdiOutput m_ndi;
     QTimer m_captureTimer;
 };
 

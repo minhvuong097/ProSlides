@@ -91,6 +91,10 @@ PresentationController::PresentationController(QObject* parent)
 
     connect(&m_output, &output::OutputManager::recordingChanged,
             this, &PresentationController::recordingChanged);
+    connect(&m_output, &output::OutputManager::streamingChanged,
+            this, &PresentationController::streamingChanged);
+    connect(&m_output, &output::OutputManager::ndiChanged,
+            this, &PresentationController::ndiChanged);
 
     connect(&m_stage, &stage::StageManager::visibleChanged,
             this, &PresentationController::stageChanged);
@@ -837,6 +841,16 @@ void PresentationController::stopRecording()
     emit toast(QStringLiteral(u"Recording saved"));
 }
 
+bool PresentationController::startStreaming(const QString& url, bool hls)
+{
+    const bool ok = m_output.startStreaming(url, hls);
+    if (ok) emit toast(QStringLiteral(u"Streaming started"));
+    return ok;
+}
+void PresentationController::stopStreaming() { m_output.stopStreaming(); }
+bool PresentationController::startNdi(const QString& name) { return m_output.startNdi(name); }
+void PresentationController::stopNdi() { m_output.stopNdi(); }
+
 QString PresentationController::backupNow(const QString& label)
 {
     const QString id = m_backup.backupNow(label);
@@ -1048,6 +1062,13 @@ void PresentationController::onApiRequested(const QString& api, const QJsonObjec
         result = startRecording(data.value(QStringLiteral(u"path")).toString());
     }
     else if (api == "stop_output_recording") { stopRecording(); result = true; }
+    else if (api == "start_stream") {
+        result = startStreaming(data.value(QStringLiteral(u"url")).toString(),
+                                data.value(QStringLiteral(u"hls")).toBool(false));
+    }
+    else if (api == "stop_stream") { stopStreaming(); result = true; }
+    else if (api == "start_ndi") { result = startNdi(data.value(QStringLiteral(u"name")).toString()); }
+    else if (api == "stop_ndi") { stopNdi(); result = true; }
     else if (api == "toggle_output_recording") {
         if (recording()) stopRecording();
         else startRecording(data.value(QStringLiteral(u"path")).toString());

@@ -54,6 +54,7 @@ Các module đã có trong `src/`:
 | Service Flow | Tạo project, thêm/xóa item, mở và điều hướng theo service |
 | Visual editor | Chế độ Editor: kéo item, đổi cỡ chữ/màu/căn chỉnh trên canvas |
 | Audio mixer | Nhiều kênh audio: play/stop, mute/solo, volume, Routing cơ bản |
+| Streaming/NDI | RTMP/HLS qua FFmpeg, NDI sender (cần NDI SDK), điều khiển từ remote |
 | Stage display | Màn hình riêng cho ca sĩ: slide hiện tại, slide kế, notes, đồng hồ |
 | `templates`, `overlays`, `audio`, `triggers` | Template, overlay/scene, playlist audio, MIDI/phím tắt |
 | `backup`, `providers`, `cloud` | Sao lưu, Planning Center, relay CRDT |

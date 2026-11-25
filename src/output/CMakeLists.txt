@@ -11,6 +11,7 @@ target_include_directories(ps_output PUBLIC
 target_link_libraries(ps_output PUBLIC
     ps_core
     ps_recording
+    ps_streaming
     Qt6::Core
     Qt6::Gui
     Qt6::Qml

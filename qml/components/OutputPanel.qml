@@ -193,6 +193,11 @@ Item {
                     width: parent.width
                     height: 70
                 }
+
+                StreamPanel {
+                    width: parent.width
+                    height: 76
+                }
             }
         }
     }

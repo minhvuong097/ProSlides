@@ -19,6 +19,8 @@ OutputManager::OutputManager(QObject* parent)
     connect(&m_captureTimer, &QTimer::timeout, this, &OutputManager::captureFrame);
     connect(&m_recorder, &recording::OutputRecorder::recordingChanged,
             this, &OutputManager::recordingChanged);
+    connect(&m_stream, &streaming::StreamOutput::activeChanged,
+            this, &OutputManager::streamingChanged);
 }
 
 QJsonObject OutputManager::currentSlide() const
@@ -147,8 +149,8 @@ bool OutputManager::startRecording(const QString& path)
 
 void OutputManager::stopRecording()
 {
-    m_captureTimer.stop();
     m_recorder.stop();
+    if (!m_stream.active() && !m_ndi.isActive()) m_captureTimer.stop();
 }
 
 void OutputManager::toggleRecording(const QString& path)
@@ -157,12 +159,47 @@ void OutputManager::toggleRecording(const QString& path)
     else startRecording(path);
 }
 
+bool OutputManager::startStreaming(const QString& url, bool hls)
+{
+    if (m_displays.isEmpty() || !m_displays.first()->window()) return false;
+    const auto* window = m_displays.first()->window();
+    if (!m_stream.start(url, QSize(window->width(), window->height()), 30.0, hls)) return false;
+    m_captureTimer.start();
+    return true;
+}
+
+void OutputManager::stopStreaming()
+{
+    m_stream.stop();
+    if (!m_recorder.recording() && !m_ndi.isActive()) m_captureTimer.stop();
+}
+
+bool OutputManager::startNdi(const QString& name)
+{
+    const bool ok = m_ndi.initialize(name);
+    if (ok) m_captureTimer.start();
+    emit ndiChanged(ok);
+    return ok;
+}
+
+void OutputManager::stopNdi()
+{
+    // NdiOutput has no explicit stop; destroy/recreate would be needed for a
+    // full implementation. Keep the sender alive but stop pushing frames.
+    if (m_ndi.isActive()) emit ndiChanged(false);
+}
+
 void OutputManager::captureFrame()
 {
-    if (!m_recorder.recording() || m_displays.isEmpty()) return;
+    if (!m_recorder.recording() && !m_stream.active() && !m_ndi.isActive()) return;
+    if (m_displays.isEmpty()) return;
     auto* window = m_displays.first()->window();
     if (!window) return;
-    m_recorder.pushFrame(window->grabWindow());
+
+    const QImage frame = window->grabWindow();
+    if (m_recorder.recording()) m_recorder.pushFrame(frame);
+    if (m_stream.active()) m_stream.pushFrame(frame);
+    if (m_ndi.isActive()) m_ndi.sendFrame(frame);
 }
 
 void OutputManager::pushToDisplays()

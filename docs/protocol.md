@@ -72,6 +72,8 @@ ProSlides dùng WebSocket (mặc định `ws://<host>:5510`) với envelope gi�
 | `get_key` | `{}` | `"C"`, `"G"`... |
 | `start_output_recording` | `{path}` | `true` |
 | `stop_output_recording` / `toggle_output_recording` | `{}` / `{path}` | `true` / bool |
+| `start_stream` / `stop_stream` | `{url, hls}` / `{}` | bool / `true` |
+| `start_ndi` / `stop_ndi` | `{name}` / `{}` | bool / `true` |
 | `get_backups` / `create_backup` / `restore_backup` | `{}` / `{label}` / `{id}` | mảng / id / bool |
 | `get_plans` / `fetch_plans` / `import_plan` | `{}` / `{from,to}` / `{id}` | mảng / `true` / bool |
 | `create_project` / `delete_project` | `{name}` / `{id}` | project id / bool |
